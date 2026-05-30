@@ -22,7 +22,7 @@ dotenv.config();
 
 const app = express();
 const corsOptions = {
-  origin: process.env.CLIENT_URL || true,
+  origin: process.env.CLIENT_URL ? [process.env.CLIENT_URL, process.env.CLIENT_URL.replace(/\/$/, '')] : true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
