@@ -24,7 +24,7 @@ export const Route = createFileRoute("/app/admin/employees")({
   component: AdminEmployees,
 });
 
-type SortField = "name" | "department";
+type SortField = "name" | "department" | "employeeId";
 
 function AdminEmployees() {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ function AdminEmployees() {
   
   const [query, setQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("");
-  const [sortBy, setSortBy] = useState<SortField>("name");
+  const [sortBy, setSortBy] = useState<SortField>("employeeId");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -95,6 +95,9 @@ function AdminEmployees() {
       } else if (sortBy === "department") {
         aVal = a.department || "";
         bVal = b.department || "";
+      } else if (sortBy === "employeeId") {
+        aVal = a.employeeId || "";
+        bVal = b.employeeId || "";
       }
 
       return sortOrder === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
@@ -208,8 +211,24 @@ function AdminEmployees() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Employee</TableHead>
-                      <TableHead>Employee ID</TableHead>
+                      <TableHead>
+                        <button
+                          className="flex items-center gap-1 hover:text-foreground"
+                          onClick={() => toggleSort("name")}
+                        >
+                          Employee
+                          {sortBy === "name" && (sortOrder === "asc" ? " ↑" : " ↓")}
+                        </button>
+                      </TableHead>
+                      <TableHead>
+                        <button
+                          className="flex items-center gap-1 hover:text-foreground"
+                          onClick={() => toggleSort("employeeId")}
+                        >
+                          Employee ID
+                          {sortBy === "employeeId" && (sortOrder === "asc" ? " ↑" : " ↓")}
+                        </button>
+                      </TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>
                         <button

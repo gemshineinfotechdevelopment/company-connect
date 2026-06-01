@@ -1,7 +1,7 @@
 // In-memory mock data store. Replace with API calls when wiring a real backend.
 export type Role = "admin" | "employee";
 export type LeaveStatus = "pending" | "approved" | "rejected";
-export type AttendanceStatus = "present" | "absent" | "not_marked";
+export type AttendanceStatus = "present" | "absent" | "not_marked" | "WFH" | "LEAVE" | "PRESENT" | "ABSENT";
 
 export interface User {
   id: string;
