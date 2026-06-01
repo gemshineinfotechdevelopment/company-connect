@@ -11,6 +11,7 @@ import {
   LogOut,
   Building2,
   Menu,
+  Settings,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useStore } from "@/lib/store";
@@ -35,6 +36,7 @@ const adminNav = [
   { to: "/app/admin/attendance", label: "Attendance", icon: Clock },
   { to: "/app/admin/holidays", label: "Holidays", icon: CalendarDays },
   { to: "/app/admin/approvals", label: "Approvals", icon: CheckSquare },
+  { to: "/app/admin/settings", label: "Settings", icon: Settings },
   { to: "/app/chat", label: "Team Chat", icon: MessageSquare },
   { to: "/app/profile", label: "Profile", icon: UserIcon },
 ];

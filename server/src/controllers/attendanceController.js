@@ -1,7 +1,9 @@
 const Attendance = require('../models/Attendance');
 const Employee = require('../models/Employee');
 const MonthlyAttendanceSummary = require('../models/MonthlyAttendanceSummary');
+const CompanySetting = require('../models/CompanySetting');
 const { sendSuccess, sendError } = require('../utils/response');
+const geolib = require('geolib');
 
 const getTodayDateString = () => {
   const d = new Date();
@@ -16,6 +18,7 @@ exports.checkIn = async (req, res) => {
   try {
     const employeeId = req.user.id;
     const date = getTodayDateString();
+    const { latitude, longitude, accuracy, deviceInfo, browserDetails } = req.body;
 
     // Check for approved leave
     const Leave = require('../models/Leave');
@@ -34,12 +37,56 @@ exports.checkIn = async (req, res) => {
       return sendError(res, 'You are on approved leave today. Cannot check in.', 400);
     }
 
+    // Check for approved WFH
+    const Wfh = require('../models/Wfh');
+    const activeWfh = await Wfh.findOne({
+      employeeId,
+      status: 'APPROVED',
+      date: { $gte: startOfToday, $lte: endOfToday }
+    });
+
+    // Geo-Fencing calculations
+    const settings = await CompanySetting.findOne();
+    let distance = 0;
+    let outsideRadius = false;
+
+    if (settings) {
+      if (latitude === undefined || longitude === undefined) {
+        return sendError(res, 'GPS location details are required to check in.', 400);
+      }
+
+      distance = geolib.getDistance(
+        { latitude: Number(latitude), longitude: Number(longitude) },
+        { latitude: settings.latitude, longitude: settings.longitude }
+      );
+
+      outsideRadius = distance > settings.allowedRadius;
+
+      // Block check-in if outside AND geofencing is enforced AND they do NOT have approved WFH status
+      if (outsideRadius && settings.enforceGeofencing && !activeWfh) {
+        return sendError(res, 'You are outside the company location. Check-In not allowed.', 400);
+      }
+    }
+
+    const ipAddress = req.headers['x-forwarded-for'] || req.ip || req.socket.remoteAddress || 'Unknown IP';
+    const status = activeWfh ? 'WFH' : 'PRESENT';
+
     let attendance = await Attendance.findOne({ employeeId, date });
     if (attendance) {
       if (attendance.checkInTime) {
         return sendError(res, 'Already checked in for today', 400);
       } else {
         attendance.checkInTime = new Date();
+        attendance.status = status;
+        attendance.checkInLatitude = latitude ? Number(latitude) : undefined;
+        attendance.checkInLongitude = longitude ? Number(longitude) : undefined;
+        attendance.checkInDistance = distance;
+        attendance.checkInAccuracy = accuracy ? Number(accuracy) : undefined;
+        attendance.checkInOutsideRadius = outsideRadius;
+        attendance.checkInIpAddress = ipAddress;
+        attendance.checkInDeviceInfo = deviceInfo || 'Unknown Device';
+        attendance.checkInBrowserDetails = browserDetails || 'Unknown Browser';
+        
         await attendance.save();
         return sendSuccess(res, 'Checked in successfully', { attendance });
       }
@@ -48,8 +95,16 @@ exports.checkIn = async (req, res) => {
     attendance = new Attendance({
       employeeId,
       date,
-      status: 'PRESENT',
-      checkInTime: new Date()
+      status,
+      checkInTime: new Date(),
+      checkInLatitude: latitude ? Number(latitude) : undefined,
+      checkInLongitude: longitude ? Number(longitude) : undefined,
+      checkInDistance: distance,
+      checkInAccuracy: accuracy ? Number(accuracy) : undefined,
+      checkInOutsideRadius: outsideRadius,
+      checkInIpAddress: ipAddress,
+      checkInDeviceInfo: deviceInfo || 'Unknown Device',
+      checkInBrowserDetails: browserDetails || 'Unknown Browser'
     });
     await attendance.save();
 
@@ -64,6 +119,7 @@ exports.checkOut = async (req, res) => {
   try {
     const employeeId = req.user.id;
     const date = getTodayDateString();
+    const { latitude, longitude, accuracy, deviceInfo, browserDetails } = req.body;
 
     const attendance = await Attendance.findOne({ employeeId, date });
     if (!attendance || !attendance.checkInTime) {
@@ -73,12 +129,37 @@ exports.checkOut = async (req, res) => {
       return sendError(res, 'Already checked out for today', 400);
     }
 
+    // Geo-Fencing calculations for checkout (for auditing)
+    const settings = await CompanySetting.findOne();
+    let distance = 0;
+    let outsideRadius = false;
+
+    if (settings && latitude !== undefined && longitude !== undefined) {
+      distance = geolib.getDistance(
+        { latitude: Number(latitude), longitude: Number(longitude) },
+        { latitude: settings.latitude, longitude: settings.longitude }
+      );
+      outsideRadius = distance > settings.allowedRadius;
+    }
+
+    const ipAddress = req.headers['x-forwarded-for'] || req.ip || req.socket.remoteAddress || 'Unknown IP';
+
     attendance.checkOutTime = new Date();
     
     // calculate total hours
     const msDiff = attendance.checkOutTime.getTime() - attendance.checkInTime.getTime();
     attendance.totalHours = parseFloat((msDiff / (1000 * 60 * 60)).toFixed(2));
     
+    // save checkout location and security logs
+    attendance.checkOutLatitude = latitude ? Number(latitude) : undefined;
+    attendance.checkOutLongitude = longitude ? Number(longitude) : undefined;
+    attendance.checkOutDistance = distance;
+    attendance.checkOutAccuracy = accuracy ? Number(accuracy) : undefined;
+    attendance.checkOutOutsideRadius = outsideRadius;
+    attendance.checkOutIpAddress = ipAddress;
+    attendance.checkOutDeviceInfo = deviceInfo || 'Unknown Device';
+    attendance.checkOutBrowserDetails = browserDetails || 'Unknown Browser';
+
     await attendance.save();
 
     return sendSuccess(res, 'Checked out successfully', { attendance });

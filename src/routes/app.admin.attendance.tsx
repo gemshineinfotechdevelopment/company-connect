@@ -16,6 +16,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { ChevronDown, ChevronUp, MapPin, Eye, Info, AlertTriangle, ShieldAlert, Laptop, Network, Globe } from "lucide-react";
 
 export const Route = createFileRoute("/app/admin/attendance")({
   component: AdminAttendance,
@@ -36,6 +37,13 @@ function AdminAttendance() {
   const [month, setMonth] = useState(String(new Date().getMonth() + 1).padStart(2, "0"));
   const [year, setYear] = useState(String(new Date().getFullYear()));
   const [statusFilter, setStatusFilter] = useState<"all" | "PRESENT" | "ABSENT" | "WFH">("all");
+  const [searchName, setSearchName] = useState("");
+  const [geofenceOnly, setGeofenceOnly] = useState(false);
+  const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
+
+  const toggleRow = (id: string) => {
+    setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
+  };
   
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);

@@ -11,13 +11,28 @@ const getAuthHeaders = () => {
   };
 };
 
-export const checkIn = async () => {
-  const response = await axios.post(`${API_BASE}/api/attendance/checkin`, {}, getAuthHeaders());
+export const checkIn = async (locationData?: { latitude: number; longitude: number; accuracy: number; deviceInfo?: string; browserDetails?: string }) => {
+  const response = await axios.post(`${API_BASE}/api/attendance/checkin`, locationData || {}, getAuthHeaders());
   return response.data;
 };
 
-export const checkOut = async () => {
-  const response = await axios.post(`${API_BASE}/api/attendance/checkout`, {}, getAuthHeaders());
+export const checkOut = async (locationData?: { latitude: number; longitude: number; accuracy: number; deviceInfo?: string; browserDetails?: string }) => {
+  const response = await axios.post(`${API_BASE}/api/attendance/checkout`, locationData || {}, getAuthHeaders());
+  return response.data;
+};
+
+export const fetchCompanySettings = async () => {
+  const response = await axios.get(`${API_BASE}/api/company-settings`, getAuthHeaders());
+  return response.data;
+};
+
+export const fetchAdminCompanySettings = async () => {
+  const response = await axios.get(`${API_BASE}/api/admin/company-settings`, getAuthHeaders());
+  return response.data;
+};
+
+export const updateCompanySettings = async (settings: { companyName: string; latitude: number; longitude: number; allowedRadius: number; enforceGeofencing: boolean }) => {
+  const response = await axios.put(`${API_BASE}/api/admin/company-settings`, settings, getAuthHeaders());
   return response.data;
 };
 
