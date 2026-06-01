@@ -136,8 +136,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const loadRemoteState = useCallback(async () => {
     try {
       const holidays = await api.fetchHolidays();
+      const latestProfile = await api.fetchProfile();
+      
+      setCurrentUser((prev) => {
+        if (JSON.stringify(prev) !== JSON.stringify(latestProfile)) {
+          return latestProfile;
+        }
+        return prev;
+      });
 
-      if (currentUser?.role === "admin") {
+      if (latestProfile.role === "admin") {
         const [employeeList, pendingLeaves, pendingWfh, todayAttendance] = await Promise.all([
           api.fetchEmployees(),
           api.fetchPendingLeaves(),
@@ -217,7 +225,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           delete apiPatch.dateOfBirth;
           delete apiPatch.joinedDate;
           
-          await api.updateEmployee(id, apiPatch);
+          if (currentUser?.role === 'admin') {
+            await api.updateEmployee(id, apiPatch);
+          }
+          
           setState((s) => ({
             ...s,
             users: s.users.map((u) => (u.id === id ? { ...u, ...patch } : u)),
