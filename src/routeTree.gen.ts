@@ -20,6 +20,7 @@ import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
 import { Route as AppChatRouteImport } from './routes/app.chat'
 import { Route as AppAttendanceRouteImport } from './routes/app.attendance'
 import { Route as AppAdminRouteImport } from './routes/app.admin'
+import { Route as AppAdminSettingsRouteImport } from './routes/app.admin.settings'
 import { Route as AppAdminHolidaysRouteImport } from './routes/app.admin.holidays'
 import { Route as AppAdminEmployeesRouteImport } from './routes/app.admin.employees'
 import { Route as AppAdminAttendanceRouteImport } from './routes/app.admin.attendance'
@@ -81,6 +82,11 @@ const AppAdminRoute = AppAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminSettingsRoute = AppAdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppAdminHolidaysRoute = AppAdminHolidaysRouteImport.update({
   id: '/holidays',
   path: '/holidays',
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/app/admin/attendance': typeof AppAdminAttendanceRoute
   '/app/admin/employees': typeof AppAdminEmployeesRouteWithChildren
   '/app/admin/holidays': typeof AppAdminHolidaysRoute
+  '/app/admin/settings': typeof AppAdminSettingsRoute
   '/app/admin/employees/$id': typeof AppAdminEmployeesIdRoute
 }
 export interface FileRoutesByTo {
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/app/admin/attendance': typeof AppAdminAttendanceRoute
   '/app/admin/employees': typeof AppAdminEmployeesRouteWithChildren
   '/app/admin/holidays': typeof AppAdminHolidaysRoute
+  '/app/admin/settings': typeof AppAdminSettingsRoute
   '/app/admin/employees/$id': typeof AppAdminEmployeesIdRoute
 }
 export interface FileRoutesById {
@@ -160,6 +168,7 @@ export interface FileRoutesById {
   '/app/admin/attendance': typeof AppAdminAttendanceRoute
   '/app/admin/employees': typeof AppAdminEmployeesRouteWithChildren
   '/app/admin/holidays': typeof AppAdminHolidaysRoute
+  '/app/admin/settings': typeof AppAdminSettingsRoute
   '/app/admin/employees/$id': typeof AppAdminEmployeesIdRoute
 }
 export interface FileRouteTypes {
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/app/admin/attendance'
     | '/app/admin/employees'
     | '/app/admin/holidays'
+    | '/app/admin/settings'
     | '/app/admin/employees/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/app/admin/attendance'
     | '/app/admin/employees'
     | '/app/admin/holidays'
+    | '/app/admin/settings'
     | '/app/admin/employees/$id'
   id:
     | '__root__'
@@ -216,6 +227,7 @@ export interface FileRouteTypes {
     | '/app/admin/attendance'
     | '/app/admin/employees'
     | '/app/admin/holidays'
+    | '/app/admin/settings'
     | '/app/admin/employees/$id'
   fileRoutesById: FileRoutesById
 }
@@ -304,6 +316,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/admin/settings': {
+      id: '/app/admin/settings'
+      path: '/settings'
+      fullPath: '/app/admin/settings'
+      preLoaderRoute: typeof AppAdminSettingsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/app/admin/holidays': {
       id: '/app/admin/holidays'
       path: '/holidays'
@@ -358,6 +377,7 @@ interface AppAdminRouteChildren {
   AppAdminAttendanceRoute: typeof AppAdminAttendanceRoute
   AppAdminEmployeesRoute: typeof AppAdminEmployeesRouteWithChildren
   AppAdminHolidaysRoute: typeof AppAdminHolidaysRoute
+  AppAdminSettingsRoute: typeof AppAdminSettingsRoute
 }
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
@@ -365,6 +385,7 @@ const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminAttendanceRoute: AppAdminAttendanceRoute,
   AppAdminEmployeesRoute: AppAdminEmployeesRouteWithChildren,
   AppAdminHolidaysRoute: AppAdminHolidaysRoute,
+  AppAdminSettingsRoute: AppAdminSettingsRoute,
 }
 
 const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
