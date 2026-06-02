@@ -24,7 +24,7 @@ export function ApprovalsPage() {
       <Tabs value={tab} onValueChange={setTab} className="mt-6">
         <TabsList className="mb-4">
           <TabsTrigger value="pending">Pending Approvals</TabsTrigger>
-          <TabsTrigger value="approved">Approved Requests</TabsTrigger>
+          <TabsTrigger value="approved">Request History</TabsTrigger>
         </TabsList>
 
         <TabsContent value="pending" className="mt-0">

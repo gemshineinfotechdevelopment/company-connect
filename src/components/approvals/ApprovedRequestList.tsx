@@ -35,7 +35,7 @@ export function ApprovedRequestList({ refreshTrigger }: { refreshTrigger: number
     return (
       <div className="flex flex-col items-center justify-center py-20 text-muted-foreground bg-card rounded-xl border">
         <CheckCircle2 className="h-10 w-10 mb-4 opacity-30" />
-        <p>No approved requests found.</p>
+        <p>No requests found in history.</p>
       </div>
     );
   }

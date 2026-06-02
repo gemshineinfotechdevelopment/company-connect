@@ -40,31 +40,39 @@ exports.getPendingApprovals = async (req, res) => {
 
 exports.getApprovedRequests = async (req, res) => {
   try {
-    // Fetch approved approvals from approvals collection
-    const approvals = await Approval.find({ status: 'APPROVED' })
+    // Fetch approved & rejected approvals from approvals collection
+    const approvals = await Approval.find({ status: { $in: ['APPROVED', 'REJECTED'] } })
       .populate('employeeId', 'name designation')
       .populate('approvedBy', 'name')
+      .populate('rejectedBy', 'name')
       .lean();
 
-    const records = approvals.map(a => ({
-      _id: a._id,
-      requestType: a.requestType,
-      employeeId: a.employeeId,
-      fromDate: a.fromDate,
-      toDate: a.toDate,
-      reason: a.reason,
-      status: a.status,
-      appliedDate: a.appliedDate || a.createdAt,
-      approvedDate: a.approvedDate || a.updatedAt,
-      approvedBy: a.approvedBy || null,
-      sourceId: a.sourceId || null,
-    }));
+    const records = approvals.map(a => {
+      const isApproved = a.status === 'APPROVED';
+      return {
+        _id: a._id,
+        requestType: a.requestType,
+        employeeId: a.employeeId,
+        fromDate: a.fromDate,
+        toDate: a.toDate,
+        reason: a.reason,
+        status: a.status,
+        appliedDate: a.appliedDate || a.createdAt,
+        approvedDate: isApproved 
+          ? (a.approvedDate || a.updatedAt) 
+          : (a.rejectedAt || a.updatedAt),
+        approvedBy: isApproved 
+          ? (a.approvedBy || null) 
+          : (a.rejectedBy || null),
+        sourceId: a.sourceId || null,
+      };
+    });
     records.sort((a, b) => new Date(b.approvedDate) - new Date(a.approvedDate));
 
-    return sendSuccess(res, 'Approved requests fetched successfully', { records });
+    return sendSuccess(res, 'Approved/rejected requests fetched successfully', { records });
   } catch (err) {
-    console.error('Error fetching approved requests:', err);
-    return sendError(res, 'Server error fetching approved requests', 500);
+    console.error('Error fetching approved/rejected requests:', err);
+    return sendError(res, 'Server error fetching approved/rejected requests', 500);
   }
 };
 

@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchAdminDateAttendance, fetchAdminMonthlyAttendance, fetchAdminAllAttendance, fetchAdminMonthlySummaries, generateAdminMonthlySummary } from "@/lib/attendanceService";
-import { getStatusBadgeClass } from "@/lib/attendanceUtils";
+import { getStatusBadgeClass, formatWorkingHours } from "@/lib/attendanceUtils";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -269,7 +269,7 @@ function AdminAttendance() {
                         <TableCell>{r.date}</TableCell>
                         <TableCell>{fmt(r.checkInTime)}</TableCell>
                         <TableCell>{fmt(r.checkOutTime)}</TableCell>
-                        <TableCell>{r.totalHours ? `${r.totalHours}h` : "—"}</TableCell>
+                        <TableCell>{formatWorkingHours(r.totalHours)}</TableCell>
                         <TableCell className="text-right">
                           <Badge variant="outline" className={`text-[10px] uppercase tracking-wider ${getStatusBadgeClass(r.status)}`}>
                             {r.status}
@@ -385,7 +385,7 @@ function AdminAttendance() {
                         <TableCell className="text-center text-blue-600">{s.totalWfh}</TableCell>
                         <TableCell className="text-center text-yellow-600">{s.totalLeave}</TableCell>
                         <TableCell className="text-center text-red-600">{s.totalAbsent}</TableCell>
-                        <TableCell className="text-right font-medium">{s.totalHours ? `${s.totalHours}h` : "—"}</TableCell>
+                        <TableCell className="text-right font-medium">{formatWorkingHours(s.totalHours)}</TableCell>
                       </TableRow>
                     ))
                   )}

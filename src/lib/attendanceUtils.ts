@@ -78,3 +78,16 @@ export const formatAttendancePercentage = (presentDays: number, totalDays: numbe
   const percentage = (presentDays / totalDays) * 100;
   return `${percentage.toFixed(1)}%`;
 };
+
+/**
+ * Format decimal hours (e.g. 4.82) into readable hours and minutes (e.g. "4h 49m")
+ */
+export const formatWorkingHours = (hoursDecimal?: number): string => {
+  if (hoursDecimal === undefined || hoursDecimal === null || isNaN(hoursDecimal)) return "—";
+  const hours = Math.floor(hoursDecimal);
+  const minutes = Math.round((hoursDecimal - hours) * 60);
+  if (hours === 0 && minutes === 0) return "0m";
+  if (hours === 0) return `${minutes}m`;
+  if (minutes === 0) return `${hours}h`;
+  return `${hours}h ${minutes}m`;
+};

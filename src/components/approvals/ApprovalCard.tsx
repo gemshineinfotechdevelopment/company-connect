@@ -52,8 +52,17 @@ export function ApprovalCard({ request, onApprove, onReject, isPending }: Approv
             <span>Applied: {new Date(request.appliedDate).toLocaleDateString()}</span>
           ) : (
             <>
-              <span>Approved: {request.approvedDate ? new Date(request.approvedDate).toLocaleDateString() : 'N/A'}</span>
-              <span>By: {request.approvedBy?.name || 'Admin'}</span>
+              {request.status === 'REJECTED' ? (
+                <>
+                  <span>Rejected: {request.approvedDate ? new Date(request.approvedDate).toLocaleDateString() : 'N/A'}</span>
+                  <span>By: {request.approvedBy?.name || 'Admin'}</span>
+                </>
+              ) : (
+                <>
+                  <span>Approved: {request.approvedDate ? new Date(request.approvedDate).toLocaleDateString() : 'N/A'}</span>
+                  <span>By: {request.approvedBy?.name || 'Admin'}</span>
+                </>
+              )}
               <StatusBadge status={request.status.toLowerCase() as any} />
             </>
           )}

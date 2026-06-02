@@ -22,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getStatusBadgeClass } from "@/lib/attendanceUtils";
+import { getStatusBadgeClass, formatWorkingHours } from "@/lib/attendanceUtils";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -348,7 +348,7 @@ function AttendancePage() {
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Total Hours</p>
-                  <p className="text-xl font-bold">{todayRecord?.totalHours !== undefined ? `${todayRecord.totalHours} hrs` : "—"}</p>
+                  <p className="text-xl font-bold">{formatWorkingHours(todayRecord?.totalHours)}</p>
                 </div>
               </div>
             </div>
@@ -576,7 +576,7 @@ function AttendancePage() {
                         <TableCell>{r.date}</TableCell>
                         <TableCell>{fmt(r.checkInTime)}</TableCell>
                         <TableCell>{fmt(r.checkOutTime)}</TableCell>
-                        <TableCell>{r.totalHours ? `${r.totalHours}h` : "—"}</TableCell>
+                        <TableCell>{formatWorkingHours(r.totalHours)}</TableCell>
                         <TableCell className="text-right">
                           <Badge variant="outline" className={`text-[10px] uppercase tracking-wider ${getStatusBadgeClass(r.status)}`}>
                             {r.status}
@@ -678,7 +678,7 @@ function AttendancePage() {
                         <TableCell className="text-center text-blue-600">{s.totalWfh}</TableCell>
                         <TableCell className="text-center text-yellow-600">{s.totalLeave}</TableCell>
                         <TableCell className="text-center text-red-600">{s.totalAbsent}</TableCell>
-                        <TableCell className="text-right font-medium">{s.totalHours ? `${s.totalHours}h` : "—"}</TableCell>
+                        <TableCell className="text-right font-medium">{formatWorkingHours(s.totalHours)}</TableCell>
                       </TableRow>
                     ))
                   )}
