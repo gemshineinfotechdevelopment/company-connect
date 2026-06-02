@@ -54,6 +54,7 @@ app.use('/api/holidays', auth, holidaysRoutes);
 app.use('/api/employees', auth, employeesRoutes);
 app.use('/api/company-settings', auth, companySettingsRoutes);
 app.use('/api/admin/wfh', auth, isAdmin, adminWfh);
+app.use('/api/chat', auth, require('./routes/chat'));
 
 // error handler
 app.use(errorHandler);

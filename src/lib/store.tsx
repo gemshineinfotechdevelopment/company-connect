@@ -26,6 +26,7 @@ import {
   type Role,
 } from "./mock-data";
 import * as api from "./api";
+import { io } from "socket.io-client";
 
 const STORAGE_KEY = "gemshine.state.v1";
 const SESSION_KEY = "gemshine.session.v1";
@@ -54,11 +55,11 @@ interface StoreContextValue {
   applyWfh: (data: Omit<WfhRequest, "id" | "status" | "createdAt">) => Promise<void>;
   setLeaveStatus: (id: string, status: LeaveStatus) => Promise<void>;
   setWfhStatus: (id: string, status: LeaveStatus) => Promise<void>;
-  sendMessage: (userId: string, text: string) => void;
+  sendMessage: (userId: string, text: string) => Promise<void>;
   addHoliday: (holiday: Omit<Holiday, "id">) => Promise<void>;
   updateHoliday: (id: string, holiday: Partial<Holiday>) => Promise<void>;
   deleteHoliday: (id: string) => Promise<void>;
-  markMessagesAsRead: (userId: string) => void;
+  markMessagesAsRead: (userId: string) => Promise<void>;
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
@@ -135,8 +136,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const loadRemoteState = useCallback(async () => {
     try {
-      const holidays = await api.fetchHolidays();
-      const latestProfile = await api.fetchProfile();
+      const [holidays, messages, latestProfile] = await Promise.all([
+        api.fetchHolidays(),
+        api.fetchMessages(),
+        api.fetchProfile(),
+      ]);
       
       setCurrentUser((prev) => {
         if (JSON.stringify(prev) !== JSON.stringify(latestProfile)) {
@@ -157,6 +161,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           ...s,
           users: employeeList,
           holidays: holidays.holidays,
+          messages,
           leaves: pendingLeaves.leaves,
           wfh: pendingWfh.wfh,
           attendance: todayAttendance.records,
@@ -174,6 +179,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setState((s) => ({
           ...s,
           holidays: holidays.holidays,
+          messages,
           leaves: myLeaves.leaves,
           wfh: myWfh.wfh,
           attendance: myAttendance.records,
@@ -188,6 +194,34 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (!token || !currentUser) return;
     void loadRemoteState();
   }, [token, currentUser, loadRemoteState]);
+
+  useEffect(() => {
+    if (!token || !currentUser) return;
+
+    const socketUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+    const socket = io(socketUrl);
+
+    socket.on("connect", () => {
+      console.log("Connected to Socket.io server");
+    });
+
+    socket.on("new_message", (rawMsg: any) => {
+      const msg = api.mapMessage(rawMsg);
+      setState((s) => {
+        if (s.messages.some((m) => m.id === msg.id)) {
+          return s;
+        }
+        return {
+          ...s,
+          messages: [...s.messages, msg],
+        };
+      });
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [token, currentUser]);
 
   const value = useMemo<StoreContextValue>(
     () => ({
@@ -351,26 +385,40 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           console.error(err);
         }
       },
-      sendMessage: (userId, text) =>
-        setState((s) => ({
-          ...s,
-          messages: [
-            ...s.messages,
-            { id: newId(), userId, text, createdAt: new Date().toISOString(), readBy: [userId] },
-          ],
-        })),
-      markMessagesAsRead: (userId) =>
-        setState((s) => {
-          const hasUnread = s.messages.some((m) => !m.readBy?.includes(userId));
-          if (!hasUnread) return s;
-          return {
-            ...s,
-            messages: s.messages.map((m) => ({
-              ...m,
-              readBy: m.readBy?.includes(userId) ? m.readBy : [...(m.readBy || []), userId],
-            })),
-          };
-        }),
+      sendMessage: async (userId, text) => {
+        try {
+          const msg = await api.createMessage(text);
+          setState((s) => {
+            if (s.messages.some((m) => m.id === msg.id)) {
+              return s;
+            }
+            return {
+              ...s,
+              messages: [...s.messages, msg],
+            };
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      },
+      markMessagesAsRead: async (userId) => {
+        try {
+          setState((s) => {
+            const hasUnread = s.messages.some((m) => !m.readBy?.includes(userId));
+            if (!hasUnread) return s;
+            return {
+              ...s,
+              messages: s.messages.map((m) => ({
+                ...m,
+                readBy: m.readBy?.includes(userId) ? m.readBy : [...(m.readBy || []), userId],
+              })),
+            };
+          });
+          await api.markChatMessagesAsRead();
+        } catch (err) {
+          console.error(err);
+        }
+      },
       addHoliday: async (holiday) => {
         try {
           await api.createHoliday(holiday);

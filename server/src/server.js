@@ -15,6 +15,23 @@ async function start() {
     initCronJobs();
 
     const server = http.createServer(app);
+
+    const io = require('socket.io')(server, {
+      cors: {
+        origin: '*',
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        credentials: true
+      }
+    });
+    app.set('io', io);
+
+    io.on('connection', (socket) => {
+      console.log('socket connected:', socket.id);
+      socket.on('disconnect', () => {
+        console.log('socket disconnected:', socket.id);
+      });
+    });
+
     server.listen(PORT, () => {
       console.log(`Server listening on port ${PORT}`);
     });

@@ -6,6 +6,7 @@ import type {
   Holiday,
   HolidayType,
   Role,
+  ChatMessage,
 } from "./mock-data";
 
 type ApiResource = Record<string, unknown>;
@@ -192,6 +193,22 @@ function mapHoliday(holiday: ApiResource): Holiday {
   };
 }
 
+export function mapMessage(msg: ApiResource): ChatMessage {
+  const employeeId = msg.employeeId;
+  const userId =
+    typeof employeeId === "object" && employeeId !== null
+      ? getString((employeeId as ApiResource)._id)
+      : getString(employeeId);
+
+  return {
+    id: getString(msg._id),
+    userId,
+    text: getString(msg.text),
+    createdAt: getString(msg.createdAt) || new Date().toISOString(),
+    readBy: Array.isArray(msg.readBy) ? msg.readBy.map((r: any) => typeof r === "object" && r !== null ? getString(r._id) : getString(r)) : [],
+  };
+}
+
 export async function login(email: string, password: string) {
   const response = await request<{ token: string; user: ApiResource }>("/api/auth/login", {
     method: "POST",
@@ -354,3 +371,21 @@ export async function fetchWfhToday() {
     }),
   };
 }
+
+export async function fetchMessages() {
+  const response = await request<{ messages: ApiResource[] }>("/api/chat");
+  return response.messages.map(mapMessage);
+}
+
+export async function createMessage(text: string) {
+  const response = await request<{ message: ApiResource }>("/api/chat", {
+    method: "POST",
+    body: JSON.stringify({ text }),
+  });
+  return mapMessage(response.message);
+}
+
+export async function markChatMessagesAsRead() {
+  return request("/api/chat/read", { method: "PUT" });
+}
+
