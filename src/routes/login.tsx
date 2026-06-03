@@ -4,8 +4,9 @@ import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2 } from "lucide-react";
+import { Building2, Download, Share } from "lucide-react";
 import { toast } from "sonner";
+import { usePWAInstall } from "@/hooks/use-pwa-install";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -17,6 +18,15 @@ function LoginPage() {
   const [email, setEmail] = useState("admin@gemshine.dev");
   const [password, setPassword] = useState("admin123");
   const [loading, setLoading] = useState(false);
+  const { isInstallable, installApp } = usePWAInstall();
+  const [isIOS, setIsIOS] = useState(false);
+  const [isSafari, setIsSafari] = useState(false);
+
+  useEffect(() => {
+    const userAgent = window.navigator.userAgent;
+    setIsIOS(/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream);
+    setIsSafari(/^((?!chrome|android).)*safari/i.test(userAgent));
+  }, []);
 
   useEffect(() => {
     if (currentUser) {
@@ -150,6 +160,50 @@ function LoginPage() {
               </button>
             </div>
           </div>
+
+          {isInstallable && (
+            <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-4 space-y-3 dark:border-blue-900/30 dark:bg-blue-950/20 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="flex items-start gap-3">
+                <div className="h-8 w-8 rounded-md bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-sm shadow-blue-500/20">
+                  <Download className="h-4 w-4" />
+                </div>
+                <div className="space-y-1 flex-1">
+                  <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-200">
+                    Install Portal App
+                  </h4>
+                  <p className="text-[11px] text-blue-700/80 dark:text-blue-300/80 leading-relaxed">
+                    Install Gemshine Portal for a faster, native app experience on your desktop or mobile device.
+                  </p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs h-8 shadow-sm transition-all"
+                onClick={installApp}
+              >
+                Install Now
+              </Button>
+            </div>
+          )}
+
+          {isIOS && isSafari && !window.matchMedia("(display-mode: standalone)").matches && (
+            <div className="rounded-lg border border-amber-100 bg-amber-50/50 p-4 space-y-2 dark:border-amber-900/30 dark:bg-amber-950/20 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="flex items-start gap-3">
+                <div className="h-8 w-8 rounded-md bg-amber-600 flex items-center justify-center text-white shrink-0 shadow-sm shadow-amber-500/20">
+                  <Share className="h-4 w-4" />
+                </div>
+                <div className="space-y-1 flex-1">
+                  <h4 className="text-xs font-semibold text-amber-900 dark:text-amber-200">
+                    Add to Home Screen
+                  </h4>
+                  <p className="text-[11px] text-amber-700/80 dark:text-amber-300/80 leading-relaxed">
+                    Tap the <strong className="font-semibold text-amber-900 dark:text-amber-100">Share</strong> button in Safari's toolbar, then scroll down and tap <strong className="font-semibold text-amber-900 dark:text-amber-100">"Add to Home Screen"</strong>.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

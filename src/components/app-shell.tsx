@@ -12,8 +12,11 @@ import {
   Building2,
   Menu,
   Settings,
+  Download,
+  Share,
 } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
+import { usePWAInstall } from "@/hooks/use-pwa-install";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -47,6 +50,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const nav = currentUser?.role === "admin" ? adminNav : employeeNav;
+
+  const { isInstallable, installApp } = usePWAInstall();
+  const [isIOS, setIsIOS] = useState(false);
+  const [isSafari, setIsSafari] = useState(false);
+
+  useEffect(() => {
+    const userAgent = window.navigator.userAgent;
+    setIsIOS(/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream);
+    setIsSafari(/^((?!chrome|android).)*safari/i.test(userAgent));
+  }, []);
 
   const unreadMessagesCount = state.messages.filter(
     (m) => currentUser && !m.readBy?.includes(currentUser.id)
@@ -110,6 +123,37 @@ export function AppShell({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
+
+        {isInstallable && (
+          <div className="mx-3 mb-4 p-3 bg-blue-50/60 rounded-lg border border-blue-100/80 dark:bg-blue-950/20 dark:border-blue-900/30">
+            <div className="flex gap-2">
+              <Download className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-semibold text-blue-900 dark:text-blue-200">Portal Desktop App</div>
+                <p className="text-[10px] text-blue-700/85 dark:text-blue-300/85 mt-0.5 leading-normal">Install for full standalone experience.</p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              onClick={installApp}
+              className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white text-[11px] h-7 font-medium"
+            >
+              Install
+            </Button>
+          </div>
+        )}
+
+        {isIOS && isSafari && !window.matchMedia("(display-mode: standalone)").matches && (
+          <div className="mx-3 mb-4 p-3 bg-amber-50/60 rounded-lg border border-amber-100/80 dark:bg-amber-950/20 dark:border-amber-900/30">
+            <div className="flex gap-2">
+              <Share className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-semibold text-amber-900 dark:text-amber-200">Install App</div>
+                <p className="text-[10px] text-amber-700/85 dark:text-amber-300/85 mt-0.5 leading-normal">Tap Share, then "Add to Home Screen".</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="border-t border-sidebar-border p-3">
           <div className="flex items-center gap-2.5 rounded-md px-2 py-2">
@@ -196,6 +240,40 @@ export function AppShell({ children }: { children: ReactNode }) {
                     );
                   })}
                 </nav>
+
+                {isInstallable && (
+                  <div className="mx-3 mb-4 p-3 bg-blue-50/60 rounded-lg border border-blue-100/80 dark:bg-blue-950/20 dark:border-blue-900/30">
+                    <div className="flex gap-2">
+                      <Download className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-semibold text-blue-900 dark:text-blue-200">Portal App</div>
+                        <p className="text-[10px] text-blue-700/85 dark:text-blue-300/85 mt-0.5 leading-normal">Install for a faster, native experience.</p>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        installApp();
+                      }}
+                      className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white text-[11px] h-7 font-medium"
+                    >
+                      Install
+                    </Button>
+                  </div>
+                )}
+
+                {isIOS && isSafari && !window.matchMedia("(display-mode: standalone)").matches && (
+                  <div className="mx-3 mb-4 p-3 bg-amber-50/60 rounded-lg border border-amber-100/80 dark:bg-amber-950/20 dark:border-amber-900/30">
+                    <div className="flex gap-2">
+                      <Share className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-semibold text-amber-900 dark:text-amber-200">Install App</div>
+                        <p className="text-[10px] text-amber-700/85 dark:text-amber-300/85 mt-0.5 leading-normal">Tap Share, then "Add to Home Screen".</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="border-t border-border p-3">
                   <div className="flex items-center gap-2.5 rounded-md px-2 py-2">

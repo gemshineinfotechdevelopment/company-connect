@@ -20,3 +20,17 @@ if (!rootElement.innerHTML) {
     </React.StrictMode>,
   );
 }
+
+// Register Service Worker for PWA
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((registration) => {
+        console.log("ServiceWorker registered successfully: ", registration.scope);
+      })
+      .catch((err) => {
+        console.warn("ServiceWorker registration failed: ", err);
+      });
+  });
+}
