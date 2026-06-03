@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 const { sendError } = require('../utils/response');
+const Employee = require('../models/Employee');
 
-module.exports = function verifyToken(req, res, next) {
+module.exports = async function verifyToken(req, res, next) {
   const header = req.header('Authorization');
   if (!header) return sendError(res, 'No token provided', 401);
 
@@ -11,7 +12,17 @@ module.exports = function verifyToken(req, res, next) {
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = payload;
+    
+    // Look up latest user data from DB to avoid stale JWT cached roles/status
+    const user = await Employee.findById(payload.id);
+    if (!user) return sendError(res, 'User no longer exists', 401);
+    if (user.status === 'INACTIVE') return sendError(res, 'User account is inactive', 403);
+
+    req.user = {
+      id: user._id.toString(),
+      role: user.role,
+      email: user.email,
+    };
     return next();
   } catch (err) {
     return sendError(res, 'Invalid token', 401);
