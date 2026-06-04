@@ -42,12 +42,8 @@ export function ApprovedRequestList({ refreshTrigger }: { refreshTrigger: number
 
   return (
     <div className="space-y-4">
-      {requests.map(req => (
-        <ApprovalCard
-          key={req._id}
-          request={req}
-          isPending={false}
-        />
+      {requests.map((req) => (
+        <ApprovalCard key={req._id} request={req} isPending={false} />
       ))}
     </div>
   );

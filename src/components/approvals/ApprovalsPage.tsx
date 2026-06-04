@@ -11,7 +11,7 @@ export function ApprovalsPage() {
   const handleActionComplete = () => {
     // When a request is approved, we want the Approved list to fetch the new data
     // if the user switches to it or if it's already rendered.
-    setRefreshApproved(prev => prev + 1);
+    setRefreshApproved((prev) => prev + 1);
   };
 
   return (

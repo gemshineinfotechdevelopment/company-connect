@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { ApprovalRequest, fetchPendingApprovals, approveRequest, rejectRequest } from "@/lib/approvalService";
+import {
+  ApprovalRequest,
+  fetchPendingApprovals,
+  approveRequest,
+  rejectRequest,
+} from "@/lib/approvalService";
 import { ApprovalCard } from "./ApprovalCard";
 import { toast } from "sonner";
 import { Clock } from "lucide-react";
@@ -28,7 +33,7 @@ export function PendingApprovalList({ onActionComplete }: { onActionComplete: ()
     try {
       await approveRequest(id);
       toast.success("Request Approved Successfully");
-      setRequests(requests.filter(r => r._id !== id));
+      setRequests(requests.filter((r) => r._id !== id));
       onActionComplete();
     } catch (error: any) {
       toast.error(error.message || "Failed to approve request");
@@ -39,7 +44,7 @@ export function PendingApprovalList({ onActionComplete }: { onActionComplete: ()
     try {
       await rejectRequest(id);
       toast.success("Request Rejected Successfully");
-      setRequests(requests.filter(r => r._id !== id));
+      setRequests(requests.filter((r) => r._id !== id));
       onActionComplete();
     } catch (error: any) {
       toast.error(error.message || "Failed to reject request");
@@ -65,7 +70,7 @@ export function PendingApprovalList({ onActionComplete }: { onActionComplete: ()
 
   return (
     <div className="space-y-4">
-      {requests.map(req => (
+      {requests.map((req) => (
         <ApprovalCard
           key={req._id}
           request={req}

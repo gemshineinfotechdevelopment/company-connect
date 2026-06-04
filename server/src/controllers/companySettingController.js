@@ -1,5 +1,5 @@
-const CompanySetting = require('../models/CompanySetting');
-const { sendSuccess, sendError } = require('../utils/response');
+const CompanySetting = require("../models/CompanySetting");
+const { sendSuccess, sendError } = require("../utils/response");
 
 exports.getSettings = async (req, res) => {
   try {
@@ -7,17 +7,17 @@ exports.getSettings = async (req, res) => {
     if (!settings) {
       // Return a standard default settings object if none exists in MongoDB yet
       settings = {
-        companyName: 'Gemshine Infotech',
+        companyName: "Gemshine Infotech",
         latitude: 28.6139, // default Delhi/example coordinate
-        longitude: 77.2090,
+        longitude: 77.209,
         allowedRadius: 100,
-        enforceGeofencing: true
+        enforceGeofencing: true,
       };
     }
-    return sendSuccess(res, 'Company settings retrieved successfully', { settings });
+    return sendSuccess(res, "Company settings retrieved successfully", { settings });
   } catch (err) {
     console.error(err);
-    return sendError(res, 'Server error');
+    return sendError(res, "Server error");
   }
 };
 
@@ -25,8 +25,13 @@ exports.updateSettings = async (req, res) => {
   try {
     const { companyName, latitude, longitude, allowedRadius, enforceGeofencing } = req.body;
 
-    if (!companyName || latitude === undefined || longitude === undefined || allowedRadius === undefined) {
-      return sendError(res, 'All fields are required', 400);
+    if (
+      !companyName ||
+      latitude === undefined ||
+      longitude === undefined ||
+      allowedRadius === undefined
+    ) {
+      return sendError(res, "All fields are required", 400);
     }
 
     let settings = await CompanySetting.findOne();
@@ -43,14 +48,14 @@ exports.updateSettings = async (req, res) => {
         latitude: Number(latitude),
         longitude: Number(longitude),
         allowedRadius: Number(allowedRadius),
-        enforceGeofencing: !!enforceGeofencing
+        enforceGeofencing: !!enforceGeofencing,
       });
       await settings.save();
     }
 
-    return sendSuccess(res, 'Company settings updated successfully', { settings });
+    return sendSuccess(res, "Company settings updated successfully", { settings });
   } catch (err) {
     console.error(err);
-    return sendError(res, 'Server error');
+    return sendError(res, "Server error");
   }
 };

@@ -3,6 +3,7 @@
 ## What Was Implemented
 
 ### 🎯 Core Features
+
 1. **WFH counts as PRESENT** in all statistics and dashboards
 2. **Status filtering** on attendance page (Present, Absent, WFH, All)
 3. **WFH badge** on employee list showing who's working from home today
@@ -16,25 +17,27 @@
 ### Backend
 
 #### 1. Dashboard Logic (`server/src/controllers/dashboardController.js`)
+
 ```javascript
 // WFH is now included in present count
-const presentTodayCount = await Attendance.countDocuments({ 
-  date: today, 
-  status: { $in: ['PRESENT', 'WFH'] }  // ✓ Added WFH here
+const presentTodayCount = await Attendance.countDocuments({
+  date: today,
+  status: { $in: ["PRESENT", "WFH"] }, // ✓ Added WFH here
 });
 ```
 
 #### 2. WFH Auto-Attendance (`server/src/controllers/wfhController.js`)
+
 ```javascript
 // When WFH is approved, attendance is auto-created
 exports.approve = async (req, res) => {
   // ... approve logic ...
-  
+
   // Create attendance record as WFH
   const attendance = new Attendance({
     employeeId: wfh.employeeId,
     date: dateStr,
-    status: 'WFH',
+    status: "WFH",
   });
   await attendance.save();
 };
@@ -43,6 +46,7 @@ exports.approve = async (req, res) => {
 ### Frontend
 
 #### 1. Status Filter (`src/routes/app.admin.attendance.tsx`)
+
 ```typescript
 // Filter by status
 const [statusFilter, setStatusFilter] = useState<"all" | "PRESENT" | "ABSENT" | "WFH">("all");
@@ -50,11 +54,12 @@ const [statusFilter, setStatusFilter] = useState<"all" | "PRESENT" | "ABSENT" | 
 // Apply filter
 const filteredByStatus = useMemo(() => {
   if (statusFilter === "all") return records;
-  return records.filter(r => r.status === statusFilter);
+  return records.filter((r) => r.status === statusFilter);
 }, [records, statusFilter]);
 ```
 
 #### 2. WFH Badge on Employee List (`src/routes/app.admin.employees.tsx`)
+
 ```typescript
 // Show WFH badge if employee is working from home today
 {wfhEmployeesToday.has(u.id) ? (
@@ -65,6 +70,7 @@ const filteredByStatus = useMemo(() => {
 ```
 
 #### 3. Utility Functions (`src/lib/attendanceUtils.ts`)
+
 ```typescript
 // Reusable status badge styling
 getStatusBadgeConfig(status): StatusBadgeConfig
@@ -76,18 +82,19 @@ isPresent(status): boolean  // Returns true for PRESENT and WFH
 
 ## Color Scheme
 
-| Status | Color | Usage |
-|--------|-------|-------|
-| **PRESENT** | 🟢 Green | Office attendance |
-| **ABSENT** | 🔴 Red | Not attended |
-| **WFH** | 🔵 Blue | Working from home |
-| **LEAVE** | 🟡 Yellow | On leave |
+| Status      | Color     | Usage             |
+| ----------- | --------- | ----------------- |
+| **PRESENT** | 🟢 Green  | Office attendance |
+| **ABSENT**  | 🔴 Red    | Not attended      |
+| **WFH**     | 🔵 Blue   | Working from home |
+| **LEAVE**   | 🟡 Yellow | On leave          |
 
 ---
 
 ## Workflows
 
 ### Workflow 1: Employee Marks WFH
+
 ```
 Employee applies WFH
     ↓
@@ -101,6 +108,7 @@ Shows in employee list with blue badge
 ```
 
 ### Workflow 2: Check Attendance
+
 ```
 Navigate to Admin → Attendance
     ↓
@@ -112,6 +120,7 @@ See color-coded badges for each status
 ```
 
 ### Workflow 3: View Employee Status
+
 ```
 Navigate to Admin → Employees
     ↓
@@ -127,7 +136,8 @@ Quick view of who's working from home
 ## API Changes
 
 ### New Behavior
-- `GET /api/admin/dashboard/overview` 
+
+- `GET /api/admin/dashboard/overview`
   - Now includes `wfhCount` and separate `presentEmployees`
   - `presentTodayCount` includes WFH employees
 
@@ -140,6 +150,7 @@ Quick view of who's working from home
 ## Testing Scenarios
 
 ### Scenario 1: Dashboard Statistics
+
 ```
 ✓ Create attendance with PRESENT status
 ✓ Create attendance with WFH status
@@ -148,6 +159,7 @@ Quick view of who's working from home
 ```
 
 ### Scenario 2: Attendance Filtering
+
 ```
 ✓ Go to Attendance page
 ✓ Filter by "PRESENT" - should show only PRESENT records
@@ -157,6 +169,7 @@ Quick view of who's working from home
 ```
 
 ### Scenario 3: Employee List
+
 ```
 ✓ Navigate to Employees
 ✓ Check "Attendance Today" column
@@ -165,6 +178,7 @@ Quick view of who's working from home
 ```
 
 ### Scenario 4: WFH Approval
+
 ```
 ✓ Employee applies for WFH
 ✓ Admin approves request
@@ -178,6 +192,7 @@ Quick view of who's working from home
 ## Important Notes
 
 ### ✅ What Works
+
 - WFH counts as PRESENT for statistics
 - Automatic attendance creation on WFH approval
 - Status filtering on all attendance views
@@ -185,11 +200,13 @@ Quick view of who's working from home
 - WFH shows on employee list with date
 
 ### ⚠️ Edge Cases Handled
+
 - If employee already checked in that day, WFH approval won't override it
 - WFH rejection removes auto-created attendance records
 - Status consistency across all views
 
 ### 📝 Database
+
 - **No migration needed** - WFH already in Attendance enum
 - Attendance schema: `status: enum(['PRESENT', 'ABSENT', 'LEAVE', 'WFH'])`
 
@@ -211,6 +228,7 @@ Quick view of who's working from home
 ## Rollback Plan
 
 If issues occur:
+
 1. Revert `dashboardController.js` changes
 2. Revert `wfhController.js` changes
 3. Revert frontend component changes
@@ -229,4 +247,3 @@ If issues occur:
 - [ ] Geofencing for WFH validation
 - [ ] WFH calendar view
 - [ ] Export WFH records
-

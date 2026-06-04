@@ -34,7 +34,10 @@ function AdminOverview() {
   const today = useMemo(() => new Date(), []);
   const todayKey = `gemshine.birthday-popup-seen.${currentUser.id}`;
   const employees = state.users.filter((u) => u.role === "employee");
-  const upcomingBirthdays = useMemo(() => getUpcomingBirthdays(employees, 30, today), [employees, today]);
+  const upcomingBirthdays = useMemo(
+    () => getUpcomingBirthdays(employees, 30, today),
+    [employees, today],
+  );
   const todayBirthdays = useMemo(
     () => employees.filter((u) => isBirthdayToday(u.dateOfBirth, today)),
     [employees, today],
@@ -92,19 +95,11 @@ function AdminOverview() {
           value={pendingLeaves.length}
           icon={<CalendarDays className="h-4 w-4" />}
         />
-        <Stat
-          label="Pending WFH"
-          value={pendingWfh.length}
-          icon={<Home className="h-4 w-4" />}
-        />
+        <Stat label="Pending WFH" value={pendingWfh.length} icon={<Home className="h-4 w-4" />} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 mt-6">
-        <BirthdayPanel
-          title="Upcoming Birthdays"
-          employees={upcomingBirthdays}
-          highlightToday
-        />
+        <BirthdayPanel title="Upcoming Birthdays" employees={upcomingBirthdays} highlightToday />
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">

@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,12 +14,12 @@ import { toast } from "sonner";
 import { updateEmployee } from "../services/employeeService";
 import { useStore } from "@/lib/store";
 
-export function EditEmployeeModal({ 
-  open, 
-  onOpenChange, 
-  employee 
-}: { 
-  open: boolean; 
+export function EditEmployeeModal({
+  open,
+  onOpenChange,
+  employee,
+}: {
+  open: boolean;
   onOpenChange: (open: boolean) => void;
   employee: any;
 }) {
@@ -51,7 +58,7 @@ export function EditEmployeeModal({
       toast.error("Name, email and department are required");
       return;
     }
-    
+
     try {
       // Update store which hits API and updates local state
       await updateUser(employee.id, {
@@ -61,7 +68,7 @@ export function EditEmployeeModal({
         dateOfBirth: form.dob,
         joinedDate: form.joiningDate,
       });
-      
+
       onOpenChange(false);
       toast.success("Employee updated successfully");
     } catch (err: any) {
@@ -74,16 +81,15 @@ export function EditEmployeeModal({
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit employee</DialogTitle>
-          <DialogDescription className="sr-only">Form to edit an existing employee's details.</DialogDescription>
+          <DialogDescription className="sr-only">
+            Form to edit an existing employee's details.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={onEdit} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5 col-span-2">
               <Label>Employee ID (Read Only)</Label>
-              <Input
-                value={employee?.employeeId || ""}
-                disabled
-              />
+              <Input value={employee?.employeeId || ""} disabled />
             </div>
             <div className="space-y-1.5">
               <Label>Full name *</Label>
@@ -123,7 +129,7 @@ export function EditEmployeeModal({
             </div>
             <div className="space-y-1.5">
               <Label>Role</Label>
-              <select 
+              <select
                 className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
@@ -134,7 +140,7 @@ export function EditEmployeeModal({
             </div>
             <div className="space-y-1.5">
               <Label>Status</Label>
-              <select 
+              <select
                 className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={form.status}
                 onChange={(e) => setForm({ ...form, status: e.target.value })}
@@ -161,7 +167,9 @@ export function EditEmployeeModal({
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
             <Button type="submit">Save changes</Button>
           </DialogFooter>
         </form>

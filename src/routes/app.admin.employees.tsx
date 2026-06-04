@@ -1,4 +1,10 @@
-import { createFileRoute, Navigate, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Navigate,
+  Outlet,
+  useLocation,
+  useNavigate,
+} from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useStore } from "@/lib/store";
 import { PageHeader } from "@/components/app-shell";
@@ -32,7 +38,7 @@ function AdminEmployees() {
   const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
-  
+
   const [query, setQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("");
   const [sortBy, setSortBy] = useState<SortField>("employeeId");
@@ -48,11 +54,13 @@ function AdminEmployees() {
 
   // Get today's date for attendance check
   const todayDate = useMemo(() => new Date().toISOString().slice(0, 10), []);
-  
+
   // Get WFH employees for today
   const wfhEmployeesToday = useMemo(() => {
-    const todayAttendance = state.attendance.filter(a => a.date === todayDate && a.status === "WFH");
-    return new Set(todayAttendance.map(a => a.userId));
+    const todayAttendance = state.attendance.filter(
+      (a) => a.date === todayDate && a.status === "WFH",
+    );
+    return new Set(todayAttendance.map((a) => a.userId));
   }, [state.attendance, todayDate]);
 
   // Filter employees
@@ -76,7 +84,9 @@ function AdminEmployees() {
         .filter((u) => (departmentFilter ? u.department === departmentFilter : true))
         .filter((u) =>
           query.trim()
-            ? `${u.name} ${u.email} ${u.department} ${u.employeeId}`.toLowerCase().includes(query.toLowerCase())
+            ? `${u.name} ${u.email} ${u.department} ${u.employeeId}`
+                .toLowerCase()
+                .includes(query.toLowerCase())
             : true,
         ),
     [state.users, query, departmentFilter],
@@ -287,9 +297,7 @@ function AdminEmployees() {
                         <TableCell>{getStatusBadge(u.status)}</TableCell>
                         <TableCell>
                           {wfhEmployeesToday.has(u.id) ? (
-                            <Badge className="bg-blue-100 text-blue-800 border-blue-300">
-                              WFH
-                            </Badge>
+                            <Badge className="bg-blue-100 text-blue-800 border-blue-300">WFH</Badge>
                           ) : (
                             <Badge variant="outline" className="text-xs text-muted-foreground">
                               Office

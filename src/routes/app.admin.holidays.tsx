@@ -4,13 +4,7 @@ import { useStore } from "@/lib/store";
 import { format, parseISO, getMonth } from "date-fns";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -197,13 +191,21 @@ function AdminHolidaysPage() {
                             )}
                           </TableCell>
                           <TableCell>
-                            <div className="whitespace-nowrap">{format(dateObj, "MMM dd, yyyy")}</div>
-                            <div className="text-xs text-muted-foreground">{format(dateObj, "EEEE")}</div>
+                            <div className="whitespace-nowrap">
+                              {format(dateObj, "MMM dd, yyyy")}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {format(dateObj, "EEEE")}
+                            </div>
                           </TableCell>
                           <TableCell>
                             <Badge
                               variant={holiday.type === "Government" ? "default" : "secondary"}
-                              className={holiday.type === "Government" ? "bg-violet-500 hover:bg-violet-600" : "bg-sky-500 hover:bg-sky-600 text-white"}
+                              className={
+                                holiday.type === "Government"
+                                  ? "bg-violet-500 hover:bg-violet-600"
+                                  : "bg-sky-500 hover:bg-sky-600 text-white"
+                              }
                             >
                               {holiday.type}
                             </Badge>
@@ -258,7 +260,7 @@ function AdminHolidaysPage() {
                 height="auto"
                 eventDisplay="block"
                 eventClick={(info) => {
-                  const clickedHoliday = holidays.find(h => h.id === info.event.id);
+                  const clickedHoliday = holidays.find((h) => h.id === info.event.id);
                   if (clickedHoliday) handleOpenEditModal(clickedHoliday);
                 }}
                 eventDidMount={(arg) => {

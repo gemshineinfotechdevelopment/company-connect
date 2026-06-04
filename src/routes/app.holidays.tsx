@@ -4,13 +4,7 @@ import { useStore } from "@/lib/store";
 import { format, parseISO, getMonth } from "date-fns";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -43,13 +37,10 @@ function HolidaysPage() {
 
   const filteredHolidays = useMemo(() => {
     return holidays.filter((h) => {
-      const matchesSearch = h.name
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-      
+      const matchesSearch = h.name.toLowerCase().includes(searchQuery.toLowerCase());
+
       const holidayMonth = getMonth(parseISO(h.date)).toString();
-      const matchesMonth =
-        filterMonth === "all" || holidayMonth === filterMonth;
+      const matchesMonth = filterMonth === "all" || holidayMonth === filterMonth;
 
       return matchesSearch && matchesMonth;
     });
@@ -84,9 +75,7 @@ function HolidaysPage() {
               <CalendarDays className="h-5 w-5 text-primary" />
               Calendar View
             </CardTitle>
-            <CardDescription>
-              Overview of all holidays in the month.
-            </CardDescription>
+            <CardDescription>Overview of all holidays in the month.</CardDescription>
           </CardHeader>
           <CardContent className="p-0 overflow-x-auto">
             <div className="p-4 holiday-calendar min-w-[300px]">
@@ -112,9 +101,7 @@ function HolidaysPage() {
         <Card className="shadow-lg border-primary/10 flex flex-col">
           <CardHeader className="bg-muted/50 pb-4">
             <CardTitle className="text-xl">Holiday List</CardTitle>
-            <CardDescription>
-              Detailed list of holidays.
-            </CardDescription>
+            <CardDescription>Detailed list of holidays.</CardDescription>
           </CardHeader>
           <CardContent className="p-4 flex-1 flex flex-col">
             <div className="flex flex-col sm:flex-row gap-4 mb-4">
@@ -170,7 +157,11 @@ function HolidaysPage() {
                           <TableCell>
                             <Badge
                               variant={holiday.type === "Government" ? "default" : "secondary"}
-                              className={holiday.type === "Government" ? "bg-violet-500 hover:bg-violet-600" : "bg-sky-500 hover:bg-sky-600 text-white"}
+                              className={
+                                holiday.type === "Government"
+                                  ? "bg-violet-500 hover:bg-violet-600"
+                                  : "bg-sky-500 hover:bg-sky-600 text-white"
+                              }
                             >
                               {holiday.type}
                             </Badge>

@@ -4,7 +4,17 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Mail, Phone, Calendar, Briefcase, Building2, ShieldAlert, Zap, Cake } from "lucide-react";
+import {
+  ArrowLeft,
+  Mail,
+  Phone,
+  Calendar,
+  Briefcase,
+  Building2,
+  ShieldAlert,
+  Zap,
+  Cake,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { updateMyProfile } from "@/services/employeeService";
@@ -49,20 +59,20 @@ const getInitials = (name?: string) => {
     .toUpperCase();
 };
 
-export default function EmployeeProfile({ 
-  employee, 
-  loading, 
-  error, 
-  onBack, 
+export default function EmployeeProfile({
+  employee,
+  loading,
+  error,
+  onBack,
   currentUser,
-  onUpdate 
+  onUpdate,
 }: EmployeeProfileProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [skillInput, setSkillInput] = useState("");
-  
+
   const isOwnProfile = currentUser && currentUser.id === employee?.id;
-  
+
   const [editForm, setEditForm] = useState({
     manager: employee?.manager || "",
     skills: employee?.skills || [],
@@ -105,7 +115,9 @@ export default function EmployeeProfile({
         </Button>
         <div className="rounded-2xl border border-border bg-card p-8 text-center">
           <h2 className="text-xl font-semibold">Employee not found</h2>
-          <p className="mt-2 text-sm text-muted-foreground">The requested employee profile is unavailable.</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            The requested employee profile is unavailable.
+          </p>
         </div>
       </div>
     );
@@ -125,7 +137,7 @@ export default function EmployeeProfile({
   const removeSkill = (skill: string) => {
     setEditForm({
       ...editForm,
-      skills: editForm.skills.filter((s: string) => s !== skill)
+      skills: editForm.skills.filter((s: string) => s !== skill),
     });
   };
 
@@ -177,12 +189,16 @@ export default function EmployeeProfile({
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-sm text-muted-foreground">{employee.designation || "Employee"}</p>
               {employee.department && (
-                <Badge className="bg-slate-100 text-slate-800 uppercase">{employee.department}</Badge>
+                <Badge className="bg-slate-100 text-slate-800 uppercase">
+                  {employee.department}
+                </Badge>
               )}
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
               <div className="text-sm text-muted-foreground">Employee ID</div>
-              <div className="text-sm font-medium">{employee.employeeId || employee._id || "—"}</div>
+              <div className="text-sm font-medium">
+                {employee.employeeId || employee._id || "—"}
+              </div>
               <div className="text-sm text-muted-foreground">Role</div>
               <div className="text-sm font-medium">{employee.role || "EMPLOYEE"}</div>
             </div>
@@ -222,7 +238,9 @@ export default function EmployeeProfile({
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">{formatDate(employee.joiningDate || employee.joinedDate)}</span>
+              <span className="text-sm font-medium">
+                {formatDate(employee.joiningDate || employee.joinedDate)}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -231,9 +249,9 @@ export default function EmployeeProfile({
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Personal Information</CardTitle>
             {isOwnProfile && !isEditing && (
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => {
                   setEditForm({
                     manager: employee?.manager || "",
@@ -256,7 +274,9 @@ export default function EmployeeProfile({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <p className="text-xs text-muted-foreground">Date of Birth</p>
-                  <p className="text-sm font-medium">{formatDate(employee.dob || employee.dateOfBirth)}</p>
+                  <p className="text-sm font-medium">
+                    {formatDate(employee.dob || employee.dateOfBirth)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Status</p>
@@ -287,7 +307,9 @@ export default function EmployeeProfile({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <p className="text-xs text-muted-foreground">Date of Birth</p>
-                  <p className="text-sm font-medium">{formatDate(employee.dob || employee.dateOfBirth)}</p>
+                  <p className="text-sm font-medium">
+                    {formatDate(employee.dob || employee.dateOfBirth)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Status</p>
@@ -357,7 +379,11 @@ export default function EmployeeProfile({
                       <div className="flex flex-wrap gap-2">
                         {employee.skills && employee.skills.length > 0 ? (
                           employee.skills.map((skill: string) => (
-                            <Badge key={skill} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                            <Badge
+                              key={skill}
+                              variant="outline"
+                              className="bg-blue-50 text-blue-700 border-blue-200"
+                            >
                               {skill}
                             </Badge>
                           ))
@@ -397,7 +423,9 @@ export default function EmployeeProfile({
                       </div>
                       <div className="flex flex-wrap gap-1.5 pt-2">
                         {editForm.skills.length === 0 ? (
-                          <span className="text-xs text-muted-foreground">No skills added yet.</span>
+                          <span className="text-xs text-muted-foreground">
+                            No skills added yet.
+                          </span>
                         ) : (
                           editForm.skills.map((skill: string) => (
                             <Badge
@@ -441,7 +469,9 @@ export default function EmployeeProfile({
                       <Label>Contact Name</Label>
                       <Input
                         value={editForm.emergencyContactName}
-                        onChange={(e) => setEditForm({ ...editForm, emergencyContactName: e.target.value })}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, emergencyContactName: e.target.value })
+                        }
                         placeholder="Emergency contact name"
                       />
                     </div>
@@ -449,7 +479,9 @@ export default function EmployeeProfile({
                       <Label>Contact Phone</Label>
                       <Input
                         value={editForm.emergencyContactPhone}
-                        onChange={(e) => setEditForm({ ...editForm, emergencyContactPhone: e.target.value })}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, emergencyContactPhone: e.target.value })
+                        }
                         placeholder="Emergency contact phone"
                       />
                     </div>
@@ -458,19 +490,13 @@ export default function EmployeeProfile({
               </CardContent>
             </Card>
 
-
-
             {isEditing && (
               <Card className="lg:col-span-2">
                 <CardContent className="pt-6 flex gap-2 justify-end">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsEditing(false)}
-                    disabled={isSaving}
-                  >
+                  <Button variant="outline" onClick={() => setIsEditing(false)} disabled={isSaving}>
                     Cancel
                   </Button>
-                  <Button 
+                  <Button
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                     onClick={handleSave}
                     disabled={isSaving}

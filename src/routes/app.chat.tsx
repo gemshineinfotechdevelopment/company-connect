@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Send, Smile, Paperclip, MoreVertical, Check, CheckCheck, Users } from "lucide-react";
-import EmojiPicker, { Theme } from 'emoji-picker-react';
+import EmojiPicker, { Theme } from "emoji-picker-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export const Route = createFileRoute("/app/chat")({
@@ -56,21 +56,21 @@ function ChatPage() {
 
   const userById = (id: string) => state.users.find((u) => u.id === id);
   const lastMessage = state.messages[state.messages.length - 1];
-  const unreadCount = state.messages.filter(m => !m.readBy?.includes(currentUser.id) && m.userId !== currentUser.id).length;
+  const unreadCount = state.messages.filter(
+    (m) => !m.readBy?.includes(currentUser.id) && m.userId !== currentUser.id,
+  ).length;
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] md:h-[calc(100vh-1rem)] md:mt-2 md:mr-2 rounded-lg border border-border overflow-hidden bg-background">
-
-
       {/* Right Chat Window */}
       <div className="flex-1 flex flex-col min-w-0 bg-muted/10 relative">
         {/* Chat Header */}
         <div className="h-16 border-b border-border bg-card px-4 md:px-6 flex items-center justify-between shadow-sm z-10 sticky top-0">
           <div className="flex items-center gap-3 cursor-pointer">
             <Avatar className="h-10 w-10 border border-border shadow-sm">
-               <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                 <Users className="h-4 w-4" />
-               </AvatarFallback>
+              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                <Users className="h-4 w-4" />
+              </AvatarFallback>
             </Avatar>
             <div>
               <h1 className="text-[15px] font-semibold tracking-tight">Team Chat</h1>
@@ -82,25 +82,39 @@ function ChatPage() {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <Button variant="outline" size="sm" className="hidden md:flex h-8 text-xs">Add Member</Button>
-            <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+            <Button variant="outline" size="sm" className="hidden md:flex h-8 text-xs">
+              Add Member
+            </Button>
+            <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
           </div>
         </div>
-        
+
         {/* Messages Area */}
-        <div 
-          ref={scrollRef} 
-          className="flex-1 overflow-y-auto px-4 md:px-12 py-6 space-y-4 bg-muted/20" 
-          style={{ backgroundImage: "radial-gradient(circle, var(--border) 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto px-4 md:px-12 py-6 space-y-4 bg-muted/20"
+          style={{
+            backgroundImage: "radial-gradient(circle, var(--border) 1px, transparent 1px)",
+            backgroundSize: "24px 24px",
+          }}
         >
           {state.messages.map((m, i) => {
             const u = userById(m.userId);
             const isMe = m.userId === currentUser.id;
             const prev = state.messages[i - 1];
-            const isNewDay = !prev || new Date(m.createdAt).toDateString() !== new Date(prev.createdAt).toDateString();
+            const isNewDay =
+              !prev ||
+              new Date(m.createdAt).toDateString() !== new Date(prev.createdAt).toDateString();
             const showAvatar = isNewDay || prev.userId !== m.userId;
-            const initials = u?.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
-            
+            const initials = u?.name
+              .split(" ")
+              .map((n) => n[0])
+              .slice(0, 2)
+              .join("")
+              .toUpperCase();
+
             // For mock demo: read if everyone else has read it (length > 1)
             const isRead = m.readBy && m.readBy.length > 1;
 
@@ -113,7 +127,7 @@ function ChatPage() {
                     </span>
                   </div>
                 )}
-                
+
                 <div className={`flex gap-2 group ${isMe ? "flex-row-reverse" : ""}`}>
                   <div className="w-8 shrink-0 flex items-end pb-1">
                     {showAvatar && !isMe && (
@@ -125,12 +139,16 @@ function ChatPage() {
                       </Avatar>
                     )}
                   </div>
-                  
-                  <div className={`max-w-[85%] md:max-w-[70%] flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+
+                  <div
+                    className={`max-w-[85%] md:max-w-[70%] flex flex-col ${isMe ? "items-end" : "items-start"}`}
+                  >
                     {showAvatar && !isMe && (
-                      <span className="text-[11px] font-semibold text-muted-foreground mb-0.5 ml-1">{u?.name}</span>
+                      <span className="text-[11px] font-semibold text-muted-foreground mb-0.5 ml-1">
+                        {u?.name}
+                      </span>
                     )}
-                    
+
                     <div
                       className={`relative px-3.5 pt-2 pb-1.5 shadow-sm text-[13.5px] leading-relaxed transition-shadow ${
                         isMe
@@ -139,17 +157,22 @@ function ChatPage() {
                       }`}
                     >
                       <div className="break-words mr-4">{m.text}</div>
-                      
-                      <div className={`flex items-center justify-end gap-1 mt-1 -mb-0.5 ${isMe ? "text-blue-100" : "text-muted-foreground"} text-[9px]`}>
+
+                      <div
+                        className={`flex items-center justify-end gap-1 mt-1 -mb-0.5 ${isMe ? "text-blue-100" : "text-muted-foreground"} text-[9px]`}
+                      >
                         <span>
                           {new Date(m.createdAt).toLocaleTimeString([], {
                             hour: "2-digit",
                             minute: "2-digit",
                           })}
                         </span>
-                        {isMe && (
-                          isRead ? <CheckCheck className="h-3.5 w-3.5 text-blue-200" /> : <Check className="h-3.5 w-3.5" />
-                        )}
+                        {isMe &&
+                          (isRead ? (
+                            <CheckCheck className="h-3.5 w-3.5 text-blue-200" />
+                          ) : (
+                            <Check className="h-3.5 w-3.5" />
+                          ))}
                       </div>
                     </div>
                   </div>
@@ -164,36 +187,59 @@ function ChatPage() {
           <form onSubmit={send} className="flex items-end gap-2 max-w-4xl mx-auto">
             <Popover>
               <PopoverTrigger asChild>
-                <Button type="button" variant="ghost" size="icon" className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground rounded-full transition-colors">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground rounded-full transition-colors"
+                >
                   <Smile className="h-6 w-6" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent side="top" align="start" className="w-auto p-0 border-none shadow-none bg-transparent mb-2">
-                <EmojiPicker 
-                   onEmojiClick={(e) => setText(prev => prev + e.emoji)} 
-                   theme={Theme.AUTO}
-                   previewConfig={{ showPreview: false }} 
+              <PopoverContent
+                side="top"
+                align="start"
+                className="w-auto p-0 border-none shadow-none bg-transparent mb-2"
+              >
+                <EmojiPicker
+                  onEmojiClick={(e) => setText((prev) => prev + e.emoji)}
+                  theme={Theme.AUTO}
+                  previewConfig={{ showPreview: false }}
                 />
               </PopoverContent>
             </Popover>
 
-            <Button type="button" variant="ghost" size="icon" className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground rounded-full hidden sm:flex transition-colors">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground rounded-full hidden sm:flex transition-colors"
+            >
               <Paperclip className="h-5 w-5" />
             </Button>
-            
+
             <Input
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Type a message..."
               className="flex-1 rounded-2xl bg-muted border-transparent focus-visible:ring-1 focus-visible:ring-primary h-11 px-4 text-[14px]"
             />
-            
+
             {text.trim() ? (
-              <Button type="submit" size="icon" className="h-11 w-11 shrink-0 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-transform active:scale-95">
+              <Button
+                type="submit"
+                size="icon"
+                className="h-11 w-11 shrink-0 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-transform active:scale-95"
+              >
                 <Send className="h-4 w-4 ml-0.5" />
               </Button>
             ) : (
-              <Button type="button" size="icon" variant="ghost" className="h-11 w-11 shrink-0 text-muted-foreground rounded-full pointer-events-none">
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="h-11 w-11 shrink-0 text-muted-foreground rounded-full pointer-events-none"
+              >
                 <Send className="h-5 w-5" />
               </Button>
             )}

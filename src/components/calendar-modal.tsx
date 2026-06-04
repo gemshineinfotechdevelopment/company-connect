@@ -1,5 +1,11 @@
 import { useState, useMemo } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Calendar as CalendarIcon } from "lucide-react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -78,9 +84,12 @@ export function CalendarModal({
           <div>
             <DialogTitle className="text-xl">{employeeName} - Leave Calendar</DialogTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Total approved leave days: <span className="font-semibold text-foreground">{totalLeaveDays}</span>
+              Total approved leave days:{" "}
+              <span className="font-semibold text-foreground">{totalLeaveDays}</span>
             </p>
-            <DialogDescription className="sr-only">Calendar view showing all approved leaves.</DialogDescription>
+            <DialogDescription className="sr-only">
+              Calendar view showing all approved leaves.
+            </DialogDescription>
           </div>
         </DialogHeader>
 
@@ -161,7 +170,9 @@ export function CalendarModal({
             ) : (
               <div className="rounded-md bg-muted p-8 text-center">
                 <CalendarIcon className="h-12 w-12 mx-auto text-muted-foreground/50 mb-2" />
-                <p className="text-sm text-muted-foreground">No approved leave days for this employee.</p>
+                <p className="text-sm text-muted-foreground">
+                  No approved leave days for this employee.
+                </p>
               </div>
             )}
 
@@ -182,7 +193,8 @@ export function CalendarModal({
                         <div className="h-3 w-3 rounded-full bg-red-500 mt-1.5 flex-shrink-0" />
                         <div className="flex-1 text-sm">
                           <div className="font-medium">
-                            {from.toLocaleDateString()} → {to.toLocaleDateString()} ({dayCount} days)
+                            {from.toLocaleDateString()} → {to.toLocaleDateString()} ({dayCount}{" "}
+                            days)
                           </div>
                           <div className="text-xs text-muted-foreground mt-0.5">{leave.reason}</div>
                         </div>

@@ -7,6 +7,8 @@ import type {
   HolidayType,
   Role,
   ChatMessage,
+  Task,
+  NotificationItem,
 } from "./mock-data";
 
 type ApiResource = Record<string, unknown>;
@@ -48,7 +50,9 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const data = text ? (JSON.parse(text) as unknown) : {};
 
   if (!response.ok) {
-    let errMsg = ((data as Record<string, unknown>)?.message as string | undefined) || `Request failed: ${response.status}`;
+    let errMsg =
+      ((data as Record<string, unknown>)?.message as string | undefined) ||
+      `Request failed: ${response.status}`;
     const dataRecord = data as Record<string, unknown>;
     const errorsArray = dataRecord.errors || (dataRecord.data as any)?.errors;
     if (Array.isArray(errorsArray)) {
@@ -59,7 +63,12 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   }
 
   const responseData = data as Record<string, unknown>;
-  if (responseData && typeof responseData === "object" && responseData.success === true && "data" in responseData) {
+  if (
+    responseData &&
+    typeof responseData === "object" &&
+    responseData.success === true &&
+    "data" in responseData
+  ) {
     return responseData.data as T;
   }
 
@@ -205,7 +214,11 @@ export function mapMessage(msg: ApiResource): ChatMessage {
     userId,
     text: getString(msg.text),
     createdAt: getString(msg.createdAt) || new Date().toISOString(),
-    readBy: Array.isArray(msg.readBy) ? msg.readBy.map((r: any) => typeof r === "object" && r !== null ? getString(r._id) : getString(r)) : [],
+    readBy: Array.isArray(msg.readBy)
+      ? msg.readBy.map((r: any) =>
+          typeof r === "object" && r !== null ? getString(r._id) : getString(r),
+        )
+      : [],
   };
 }
 
@@ -356,7 +369,7 @@ export async function getTokenValue() {
 }
 
 export async function fetchWfhToday() {
-  const response = await request<{ records: ApiResource[] }>('/api/admin/dashboard/wfh-today');
+  const response = await request<{ records: ApiResource[] }>("/api/admin/dashboard/wfh-today");
   return {
     records: response.records.map((r: ApiResource) => {
       const employee = r.employeeId as ApiResource | undefined;
@@ -389,3 +402,127 @@ export async function markChatMessagesAsRead() {
   return request("/api/chat/read", { method: "PUT" });
 }
 
+function mapTask(task: ApiResource): Task {
+  const assignedTo = task.assignedTo;
+  const assignedToId =
+    typeof assignedTo === "object" && assignedTo !== null
+      ? getString((assignedTo as ApiResource)._id)
+      : getString(assignedTo);
+  const assignedToName =
+    typeof assignedTo === "object" && assignedTo !== null
+      ? getString((assignedTo as ApiResource).name)
+      : "";
+
+  const assignedBy = task.assignedBy;
+  const assignedById =
+    typeof assignedBy === "object" && assignedBy !== null
+      ? getString((assignedBy as ApiResource)._id)
+      : getString(assignedBy);
+  const assignedByName =
+    typeof assignedBy === "object" && assignedBy !== null
+      ? getString((assignedBy as ApiResource).name)
+      : "";
+
+  return {
+    id: getString(task._id),
+    title: getString(task.title),
+    description: getString(task.description),
+    priority: getString(task.priority, "Medium") as "Low" | "Medium" | "High",
+    assignedTo: assignedToId,
+    assignedToName,
+    assignedBy: assignedById,
+    assignedByName,
+    assignedDate: getString(task.assignedDate)
+      ? new Date(getString(task.assignedDate)).toISOString()
+      : new Date().toISOString(),
+    dueDate: getString(task.dueDate)
+      ? new Date(getString(task.dueDate)).toISOString().slice(0, 10)
+      : "",
+    status: getString(task.status, "Pending") as "Pending" | "Completed",
+    completedDate: getString(task.completedDate)
+      ? new Date(getString(task.completedDate)).toISOString()
+      : undefined,
+  };
+}
+
+export async function fetchAdminTasks() {
+  const response = await request<{ tasks: ApiResource[] }>("/api/tasks/admin");
+  return response.tasks.map(mapTask);
+}
+
+export async function fetchAdminPendingTasks() {
+  const response = await request<{ tasks: ApiResource[] }>("/api/tasks/admin/pending");
+  return response.tasks.map(mapTask);
+}
+
+export async function fetchAdminCompletedTasks() {
+  const response = await request<{ tasks: ApiResource[] }>("/api/tasks/admin/completed");
+  return response.tasks.map(mapTask);
+}
+
+export async function createTask(data: ApiResource) {
+  const response = await request<{ task: ApiResource }>("/api/tasks/create", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+  return mapTask(response.task);
+}
+
+export async function updateTask(id: string, data: ApiResource) {
+  const response = await request<{ task: ApiResource }>(`/api/tasks/${id}/update`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+  return mapTask(response.task);
+}
+
+export async function deleteTask(id: string) {
+  return request(`/api/tasks/${id}`, { method: "DELETE" });
+}
+
+export async function fetchMyTasks() {
+  const response = await request<{ tasks: ApiResource[] }>("/api/tasks/my-tasks");
+  return response.tasks.map(mapTask);
+}
+
+export async function fetchMyPendingTasks() {
+  const response = await request<{ tasks: ApiResource[] }>("/api/tasks/my-pending");
+  return response.tasks.map(mapTask);
+}
+
+export async function fetchMyCompletedTasks() {
+  const response = await request<{ tasks: ApiResource[] }>("/api/tasks/my-completed");
+  return response.tasks.map(mapTask);
+}
+
+export async function completeTask(id: string) {
+  const response = await request<{ task: ApiResource }>(`/api/tasks/${id}/complete`, {
+    method: "PUT",
+  });
+  return mapTask(response.task);
+}
+
+function mapNotification(notif: ApiResource): NotificationItem {
+  return {
+    id: getString(notif._id),
+    recipient: getString(notif.recipient),
+    message: getString(notif.message),
+    type: getString(notif.type) as "TASK_ASSIGNED" | "TASK_OVERDUE" | "TASK_COMPLETED",
+    isRead: typeof notif.isRead === "boolean" ? notif.isRead : false,
+    relatedId: getStringOrUndefined(notif.relatedId),
+    createdAt: getString(notif.createdAt) || new Date().toISOString(),
+  };
+}
+
+export async function fetchNotifications() {
+  const response = await request<{ notifications: ApiResource[] }>("/api/notifications");
+  return response.notifications.map(mapNotification);
+}
+
+export async function markNotificationsAsRead() {
+  return request("/api/notifications/read-all", { method: "PUT" });
+}
+
+export async function deleteNotification(id: string) {
+  return request(`/api/notifications/${id}`, { method: "DELETE" });
+}

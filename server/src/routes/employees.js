@@ -1,9 +1,13 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const employeeController = require('../controllers/employeeController');
-const auth = require('../middleware/auth');
+const employeeController = require("../controllers/employeeController");
+const auth = require("../middleware/auth");
 
-router.put('/profile/update', auth.restrictEmployeeProfileUpdates, employeeController.updateProfile);
-router.get('/upcoming-birthdays', employeeController.upcomingBirthdays);
+router.put(
+  "/profile/update",
+  auth.restrictEmployeeProfileUpdates,
+  employeeController.updateProfile,
+);
+router.get("/upcoming-birthdays", employeeController.upcomingBirthdays);
 
 module.exports = router;

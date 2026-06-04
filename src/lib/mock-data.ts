@@ -1,7 +1,14 @@
 // In-memory mock data store. Replace with API calls when wiring a real backend.
 export type Role = "admin" | "employee";
 export type LeaveStatus = "pending" | "approved" | "rejected";
-export type AttendanceStatus = "present" | "absent" | "not_marked" | "WFH" | "LEAVE" | "PRESENT" | "ABSENT";
+export type AttendanceStatus =
+  | "present"
+  | "absent"
+  | "not_marked"
+  | "WFH"
+  | "LEAVE"
+  | "PRESENT"
+  | "ABSENT";
 
 export interface User {
   id: string;
@@ -75,6 +82,30 @@ export interface Holiday {
   description?: string;
 }
 
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  priority: "Low" | "Medium" | "High";
+  assignedTo: string;
+  assignedToName?: string;
+  assignedBy: string;
+  assignedByName?: string;
+  assignedDate: string;
+  dueDate: string;
+  status: "Pending" | "Completed";
+  completedDate?: string;
+}
+
+export interface NotificationItem {
+  id: string;
+  recipient: string;
+  message: string;
+  type: "TASK_ASSIGNED" | "TASK_OVERDUE" | "TASK_COMPLETED";
+  isRead: boolean;
+  relatedId?: string;
+  createdAt: string;
+}
 
 const today = () => new Date().toISOString().slice(0, 10);
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -177,37 +208,47 @@ export const seedUsers: User[] = [
 export const seedAttendance: AttendanceRecord[] = (() => {
   const records: AttendanceRecord[] = [];
   const userIds = ["u-emp-1", "u-emp-2", "u-emp-3"];
-  
+
   // Generate 30 days of attendance records
   for (let i = 0; i < 30; i++) {
     const date = new Date();
     date.setDate(date.getDate() - i);
     const dateStr = date.toISOString().slice(0, 10);
-    
+
     // Skip weekends
     if (date.getDay() === 0 || date.getDay() === 6) continue;
-    
+
     userIds.forEach((userId) => {
       const rand = Math.random();
       let status: AttendanceStatus = "present";
       let checkIn: string | undefined;
       let checkOut: string | undefined;
-      
+
       if (rand < 0.8) {
         status = "present";
         const checkInTime = new Date(date);
-        checkInTime.setHours(9 + Math.floor(Math.random() * 1), Math.floor(Math.random() * 60), 0, 0);
+        checkInTime.setHours(
+          9 + Math.floor(Math.random() * 1),
+          Math.floor(Math.random() * 60),
+          0,
+          0,
+        );
         checkIn = checkInTime.toISOString();
-        
+
         const checkOutTime = new Date(date);
-        checkOutTime.setHours(18 + Math.floor(Math.random() * 1), Math.floor(Math.random() * 60), 0, 0);
+        checkOutTime.setHours(
+          18 + Math.floor(Math.random() * 1),
+          Math.floor(Math.random() * 60),
+          0,
+          0,
+        );
         checkOut = checkOutTime.toISOString();
       } else if (rand < 0.95) {
         status = "absent";
       } else {
         status = "not_marked";
       }
-      
+
       records.push({
         id: uid(),
         userId,
@@ -218,7 +259,7 @@ export const seedAttendance: AttendanceRecord[] = (() => {
       });
     });
   }
-  
+
   return records;
 })();
 

@@ -37,13 +37,17 @@ export function BirthdayPanel({ title, employees, highlightToday = false }: Birt
         ) : (
           <div className="space-y-3">
             {employees.map((employee) => {
-              const isToday = highlightToday && employee.dateOfBirth
-                ? new Date(employee.dateOfBirth).getDate() === new Date().getDate() &&
-                  new Date(employee.dateOfBirth).getMonth() === new Date().getMonth()
-                : false;
+              const isToday =
+                highlightToday && employee.dateOfBirth
+                  ? new Date(employee.dateOfBirth).getDate() === new Date().getDate() &&
+                    new Date(employee.dateOfBirth).getMonth() === new Date().getMonth()
+                  : false;
 
               return (
-                <div key={employee.id} className="flex items-center justify-between rounded-xl border border-border bg-card p-3">
+                <div
+                  key={employee.id}
+                  className="flex items-center justify-between rounded-xl border border-border bg-card p-3"
+                >
                   <div className="flex items-center gap-3">
                     <Avatar className="h-11 w-11">
                       <AvatarFallback className="bg-primary text-primary-foreground">
@@ -52,15 +56,17 @@ export function BirthdayPanel({ title, employees, highlightToday = false }: Birt
                     </Avatar>
                     <div>
                       <div className="font-medium">{employee.name}</div>
-                      <div className="text-sm text-muted-foreground">{employee.designation ?? "Employee"}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {employee.designation ?? "Employee"}
+                      </div>
                     </div>
                   </div>
 
                   <div className="flex flex-col items-end gap-1">
-                    <span className="text-sm font-semibold">{formatBirthday(employee.dateOfBirth)}</span>
-                    {isToday && (
-                      <Badge className="bg-emerald-100 text-emerald-800">Today</Badge>
-                    )}
+                    <span className="text-sm font-semibold">
+                      {formatBirthday(employee.dateOfBirth)}
+                    </span>
+                    {isToday && <Badge className="bg-emerald-100 text-emerald-800">Today</Badge>}
                   </div>
                 </div>
               );

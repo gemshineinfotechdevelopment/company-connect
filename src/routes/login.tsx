@@ -172,7 +172,8 @@ function LoginPage() {
                     Install Portal App
                   </h4>
                   <p className="text-[11px] text-blue-700/80 dark:text-blue-300/80 leading-relaxed">
-                    Install Gemshine Portal for a faster, native app experience on your desktop or mobile device.
+                    Install Gemshine Portal for a faster, native app experience on your desktop or
+                    mobile device.
                   </p>
                 </div>
               </div>
@@ -198,7 +199,15 @@ function LoginPage() {
                     Add to Home Screen
                   </h4>
                   <p className="text-[11px] text-amber-700/80 dark:text-amber-300/80 leading-relaxed">
-                    Tap the <strong className="font-semibold text-amber-900 dark:text-amber-100">Share</strong> button in Safari's toolbar, then scroll down and tap <strong className="font-semibold text-amber-900 dark:text-amber-100">"Add to Home Screen"</strong>.
+                    Tap the{" "}
+                    <strong className="font-semibold text-amber-900 dark:text-amber-100">
+                      Share
+                    </strong>{" "}
+                    button in Safari's toolbar, then scroll down and tap{" "}
+                    <strong className="font-semibold text-amber-900 dark:text-amber-100">
+                      "Add to Home Screen"
+                    </strong>
+                    .
                   </p>
                 </div>
               </div>

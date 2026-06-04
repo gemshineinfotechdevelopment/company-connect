@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +14,13 @@ import { toast } from "sonner";
 import { createEmployee } from "../services/employeeService";
 import { useStore } from "@/lib/store";
 
-export function AddEmployeeModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export function AddEmployeeModal({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const { addUser } = useStore();
   const [form, setForm] = useState({
     employeeId: "",
@@ -33,7 +46,7 @@ export function AddEmployeeModal({ open, onOpenChange }: { open: boolean; onOpen
       toast.error("Password must be at least 6 characters long");
       return;
     }
-    
+
     try {
       // Call addUser which hits the API and updates state
       await addUser({
@@ -44,7 +57,7 @@ export function AddEmployeeModal({ open, onOpenChange }: { open: boolean; onOpen
         dateOfBirth: form.dob,
         joinedDate: form.joiningDate,
       } as any);
-      
+
       setForm({
         employeeId: "",
         name: "",
@@ -70,7 +83,9 @@ export function AddEmployeeModal({ open, onOpenChange }: { open: boolean; onOpen
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>New employee</DialogTitle>
-          <DialogDescription className="sr-only">Form to add a new employee to the system.</DialogDescription>
+          <DialogDescription className="sr-only">
+            Form to add a new employee to the system.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={onAdd} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
@@ -128,7 +143,7 @@ export function AddEmployeeModal({ open, onOpenChange }: { open: boolean; onOpen
             </div>
             <div className="space-y-1.5">
               <Label>Role</Label>
-              <select 
+              <select
                 className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
@@ -139,7 +154,7 @@ export function AddEmployeeModal({ open, onOpenChange }: { open: boolean; onOpen
             </div>
             <div className="space-y-1.5">
               <Label>Status</Label>
-              <select 
+              <select
                 className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={form.status}
                 onChange={(e) => setForm({ ...form, status: e.target.value })}
@@ -166,7 +181,9 @@ export function AddEmployeeModal({ open, onOpenChange }: { open: boolean; onOpen
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
             <Button type="submit">Create employee</Button>
           </DialogFooter>
         </form>

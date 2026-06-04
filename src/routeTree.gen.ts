@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppWfhRouteImport } from './routes/app.wfh'
+import { Route as AppTasksRouteImport } from './routes/app.tasks'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
 import { Route as AppLeaveRouteImport } from './routes/app.leave'
 import { Route as AppHolidaysRouteImport } from './routes/app.holidays'
@@ -20,6 +21,7 @@ import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
 import { Route as AppChatRouteImport } from './routes/app.chat'
 import { Route as AppAttendanceRouteImport } from './routes/app.attendance'
 import { Route as AppAdminRouteImport } from './routes/app.admin'
+import { Route as AppAdminTaskManagementRouteImport } from './routes/app.admin.task-management'
 import { Route as AppAdminSettingsRouteImport } from './routes/app.admin.settings'
 import { Route as AppAdminHolidaysRouteImport } from './routes/app.admin.holidays'
 import { Route as AppAdminEmployeesRouteImport } from './routes/app.admin.employees'
@@ -45,6 +47,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppWfhRoute = AppWfhRouteImport.update({
   id: '/wfh',
   path: '/wfh',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTasksRoute = AppTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
   getParentRoute: () => AppRoute,
 } as any)
 const AppProfileRoute = AppProfileRouteImport.update({
@@ -81,6 +88,11 @@ const AppAdminRoute = AppAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => AppRoute,
+} as any)
+const AppAdminTaskManagementRoute = AppAdminTaskManagementRouteImport.update({
+  id: '/task-management',
+  path: '/task-management',
+  getParentRoute: () => AppAdminRoute,
 } as any)
 const AppAdminSettingsRoute = AppAdminSettingsRouteImport.update({
   id: '/settings',
@@ -124,12 +136,14 @@ export interface FileRoutesByFullPath {
   '/app/holidays': typeof AppHolidaysRoute
   '/app/leave': typeof AppLeaveRoute
   '/app/profile': typeof AppProfileRoute
+  '/app/tasks': typeof AppTasksRoute
   '/app/wfh': typeof AppWfhRoute
   '/app/admin/approvals': typeof AppAdminApprovalsRoute
   '/app/admin/attendance': typeof AppAdminAttendanceRoute
   '/app/admin/employees': typeof AppAdminEmployeesRouteWithChildren
   '/app/admin/holidays': typeof AppAdminHolidaysRoute
   '/app/admin/settings': typeof AppAdminSettingsRoute
+  '/app/admin/task-management': typeof AppAdminTaskManagementRoute
   '/app/admin/employees/$id': typeof AppAdminEmployeesIdRoute
 }
 export interface FileRoutesByTo {
@@ -143,12 +157,14 @@ export interface FileRoutesByTo {
   '/app/holidays': typeof AppHolidaysRoute
   '/app/leave': typeof AppLeaveRoute
   '/app/profile': typeof AppProfileRoute
+  '/app/tasks': typeof AppTasksRoute
   '/app/wfh': typeof AppWfhRoute
   '/app/admin/approvals': typeof AppAdminApprovalsRoute
   '/app/admin/attendance': typeof AppAdminAttendanceRoute
   '/app/admin/employees': typeof AppAdminEmployeesRouteWithChildren
   '/app/admin/holidays': typeof AppAdminHolidaysRoute
   '/app/admin/settings': typeof AppAdminSettingsRoute
+  '/app/admin/task-management': typeof AppAdminTaskManagementRoute
   '/app/admin/employees/$id': typeof AppAdminEmployeesIdRoute
 }
 export interface FileRoutesById {
@@ -163,12 +179,14 @@ export interface FileRoutesById {
   '/app/holidays': typeof AppHolidaysRoute
   '/app/leave': typeof AppLeaveRoute
   '/app/profile': typeof AppProfileRoute
+  '/app/tasks': typeof AppTasksRoute
   '/app/wfh': typeof AppWfhRoute
   '/app/admin/approvals': typeof AppAdminApprovalsRoute
   '/app/admin/attendance': typeof AppAdminAttendanceRoute
   '/app/admin/employees': typeof AppAdminEmployeesRouteWithChildren
   '/app/admin/holidays': typeof AppAdminHolidaysRoute
   '/app/admin/settings': typeof AppAdminSettingsRoute
+  '/app/admin/task-management': typeof AppAdminTaskManagementRoute
   '/app/admin/employees/$id': typeof AppAdminEmployeesIdRoute
 }
 export interface FileRouteTypes {
@@ -184,12 +202,14 @@ export interface FileRouteTypes {
     | '/app/holidays'
     | '/app/leave'
     | '/app/profile'
+    | '/app/tasks'
     | '/app/wfh'
     | '/app/admin/approvals'
     | '/app/admin/attendance'
     | '/app/admin/employees'
     | '/app/admin/holidays'
     | '/app/admin/settings'
+    | '/app/admin/task-management'
     | '/app/admin/employees/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -203,12 +223,14 @@ export interface FileRouteTypes {
     | '/app/holidays'
     | '/app/leave'
     | '/app/profile'
+    | '/app/tasks'
     | '/app/wfh'
     | '/app/admin/approvals'
     | '/app/admin/attendance'
     | '/app/admin/employees'
     | '/app/admin/holidays'
     | '/app/admin/settings'
+    | '/app/admin/task-management'
     | '/app/admin/employees/$id'
   id:
     | '__root__'
@@ -222,12 +244,14 @@ export interface FileRouteTypes {
     | '/app/holidays'
     | '/app/leave'
     | '/app/profile'
+    | '/app/tasks'
     | '/app/wfh'
     | '/app/admin/approvals'
     | '/app/admin/attendance'
     | '/app/admin/employees'
     | '/app/admin/holidays'
     | '/app/admin/settings'
+    | '/app/admin/task-management'
     | '/app/admin/employees/$id'
   fileRoutesById: FileRoutesById
 }
@@ -265,6 +289,13 @@ declare module '@tanstack/react-router' {
       path: '/wfh'
       fullPath: '/app/wfh'
       preLoaderRoute: typeof AppWfhRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/tasks': {
+      id: '/app/tasks'
+      path: '/tasks'
+      fullPath: '/app/tasks'
+      preLoaderRoute: typeof AppTasksRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/profile': {
@@ -315,6 +346,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/admin'
       preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/app/admin/task-management': {
+      id: '/app/admin/task-management'
+      path: '/task-management'
+      fullPath: '/app/admin/task-management'
+      preLoaderRoute: typeof AppAdminTaskManagementRouteImport
+      parentRoute: typeof AppAdminRoute
     }
     '/app/admin/settings': {
       id: '/app/admin/settings'
@@ -378,6 +416,7 @@ interface AppAdminRouteChildren {
   AppAdminEmployeesRoute: typeof AppAdminEmployeesRouteWithChildren
   AppAdminHolidaysRoute: typeof AppAdminHolidaysRoute
   AppAdminSettingsRoute: typeof AppAdminSettingsRoute
+  AppAdminTaskManagementRoute: typeof AppAdminTaskManagementRoute
 }
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
@@ -386,6 +425,7 @@ const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminEmployeesRoute: AppAdminEmployeesRouteWithChildren,
   AppAdminHolidaysRoute: AppAdminHolidaysRoute,
   AppAdminSettingsRoute: AppAdminSettingsRoute,
+  AppAdminTaskManagementRoute: AppAdminTaskManagementRoute,
 }
 
 const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
@@ -400,6 +440,7 @@ interface AppRouteChildren {
   AppHolidaysRoute: typeof AppHolidaysRoute
   AppLeaveRoute: typeof AppLeaveRoute
   AppProfileRoute: typeof AppProfileRoute
+  AppTasksRoute: typeof AppTasksRoute
   AppWfhRoute: typeof AppWfhRoute
 }
 
@@ -411,6 +452,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppHolidaysRoute: AppHolidaysRoute,
   AppLeaveRoute: AppLeaveRoute,
   AppProfileRoute: AppProfileRoute,
+  AppTasksRoute: AppTasksRoute,
   AppWfhRoute: AppWfhRoute,
 }
 

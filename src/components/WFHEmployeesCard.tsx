@@ -50,7 +50,9 @@ export function WFHEmployeesCard() {
           <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
             <Home className="h-4 w-4" />
           </div>
-          <CardTitle className="text-base font-semibold">Today's Work From Home Employees</CardTitle>
+          <CardTitle className="text-base font-semibold">
+            Today's Work From Home Employees
+          </CardTitle>
         </div>
         {!loading && !error && (
           <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-semibold">
@@ -91,9 +93,7 @@ export function WFHEmployeesCard() {
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold">{emp.name}</h4>
-                    <p className="text-xs text-muted-foreground">
-                      {emp.designation || "Employee"}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{emp.designation || "Employee"}</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -102,7 +102,11 @@ export function WFHEmployeesCard() {
                   </span>
                   {emp.checkInTime && (
                     <p className="text-[10px] text-muted-foreground mt-1 font-medium">
-                      In: {new Date(emp.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      In:{" "}
+                      {new Date(emp.checkInTime).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </p>
                   )}
                 </div>

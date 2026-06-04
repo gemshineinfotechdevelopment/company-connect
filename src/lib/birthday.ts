@@ -24,7 +24,11 @@ export function getUpcomingBirthdays(users: User[], days = 30, today = new Date(
   const upcoming = users
     .map((user) => {
       if (!user.dateOfBirth) return null;
-      const candidate = new Date(start.getFullYear(), new Date(user.dateOfBirth).getMonth(), new Date(user.dateOfBirth).getDate());
+      const candidate = new Date(
+        start.getFullYear(),
+        new Date(user.dateOfBirth).getMonth(),
+        new Date(user.dateOfBirth).getDate(),
+      );
       if (candidate < start) {
         candidate.setFullYear(candidate.getFullYear() + 1);
       }

@@ -1,8 +1,8 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const companySettingController = require('../../controllers/companySettingController');
+const companySettingController = require("../../controllers/companySettingController");
 
-router.get('/', companySettingController.getSettings);
-router.put('/', companySettingController.updateSettings);
+router.get("/", companySettingController.getSettings);
+router.put("/", companySettingController.updateSettings);
 
 module.exports = router;

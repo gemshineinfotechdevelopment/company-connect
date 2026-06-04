@@ -26,12 +26,14 @@ export function ApprovalCard({ request, onApprove, onReject, isPending }: Approv
             <p className="text-xs text-muted-foreground">{empDesignation}</p>
           </div>
           <div className="ml-2">
-            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${request.requestType === 'LEAVE' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`}>
+            <span
+              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${request.requestType === "LEAVE" ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"}`}
+            >
               {request.requestType}
             </span>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-3">
           <div>
             <p className="text-xs text-muted-foreground mb-1">From Date</p>
@@ -43,24 +45,36 @@ export function ApprovalCard({ request, onApprove, onReject, isPending }: Approv
           </div>
           <div className="col-span-2 sm:col-span-2">
             <p className="text-xs text-muted-foreground mb-1">Reason</p>
-            <p className="text-sm truncate" title={request.reason}>{request.reason || "N/A"}</p>
+            <p className="text-sm truncate" title={request.reason}>
+              {request.reason || "N/A"}
+            </p>
           </div>
         </div>
-        
+
         <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
           {isPending ? (
             <span>Applied: {new Date(request.appliedDate).toLocaleDateString()}</span>
           ) : (
             <>
-              {request.status === 'REJECTED' ? (
+              {request.status === "REJECTED" ? (
                 <>
-                  <span>Rejected: {request.approvedDate ? new Date(request.approvedDate).toLocaleDateString() : 'N/A'}</span>
-                  <span>By: {request.approvedBy?.name || 'Admin'}</span>
+                  <span>
+                    Rejected:{" "}
+                    {request.approvedDate
+                      ? new Date(request.approvedDate).toLocaleDateString()
+                      : "N/A"}
+                  </span>
+                  <span>By: {request.approvedBy?.name || "Admin"}</span>
                 </>
               ) : (
                 <>
-                  <span>Approved: {request.approvedDate ? new Date(request.approvedDate).toLocaleDateString() : 'N/A'}</span>
-                  <span>By: {request.approvedBy?.name || 'Admin'}</span>
+                  <span>
+                    Approved:{" "}
+                    {request.approvedDate
+                      ? new Date(request.approvedDate).toLocaleDateString()
+                      : "N/A"}
+                  </span>
+                  <span>By: {request.approvedBy?.name || "Admin"}</span>
                 </>
               )}
               <StatusBadge status={request.status.toLowerCase() as any} />

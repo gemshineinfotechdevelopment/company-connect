@@ -1,5 +1,12 @@
 import { useMemo } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { XCircle } from "lucide-react";
 import { type User } from "@/lib/mock-data";
@@ -48,11 +55,16 @@ export function BirthdayPopup({ open, onOpenChange, birthdaysToday }: BirthdayPo
           </div>
           <div className="grid gap-3">
             {birthdaysToday.map((birthday) => (
-              <div key={birthday.id} className="rounded-2xl border border-border bg-card p-3 text-left">
+              <div
+                key={birthday.id}
+                className="rounded-2xl border border-border bg-card p-3 text-left"
+              >
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <div className="font-semibold">{birthday.name}</div>
-                    <div className="text-sm text-muted-foreground">{birthday.designation ?? "Employee"}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {birthday.designation ?? "Employee"}
+                    </div>
                   </div>
                   <div className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
                     Today

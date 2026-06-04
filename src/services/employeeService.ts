@@ -1,5 +1,3 @@
-
-
 import axios from "axios";
 import * as api from "../lib/api";
 
@@ -25,14 +23,14 @@ export interface EmployeeData {
   avatarUrl?: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 const getAxiosInstance = () => {
   return axios.create({
     baseURL: API_BASE,
     headers: {
-      Authorization: `Bearer ${localStorage.getItem('gemshine.token')}`
-    }
+      Authorization: `Bearer ${localStorage.getItem("gemshine.token")}`,
+    },
   });
 };
 
@@ -43,9 +41,9 @@ export const createEmployee = async (data: EmployeeData) => {
   } catch (error: any) {
     if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
       const msg = error.response.data.errors.map((e: any) => e.msg).join(", ");
-      throw new Error(`${error.response.data.message || 'Validation failed'}: ${msg}`);
+      throw new Error(`${error.response.data.message || "Validation failed"}: ${msg}`);
     }
-    throw new Error(error.response?.data?.message || error.message || 'Failed to create employee');
+    throw new Error(error.response?.data?.message || error.message || "Failed to create employee");
   }
 };
 
@@ -56,9 +54,9 @@ export const updateEmployee = async (id: string, data: Partial<EmployeeData>) =>
   } catch (error: any) {
     if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
       const msg = error.response.data.errors.map((e: any) => e.msg).join(", ");
-      throw new Error(`${error.response.data.message || 'Validation failed'}: ${msg}`);
+      throw new Error(`${error.response.data.message || "Validation failed"}: ${msg}`);
     }
-    throw new Error(error.response?.data?.message || error.message || 'Failed to update employee');
+    throw new Error(error.response?.data?.message || error.message || "Failed to update employee");
   }
 };
 
@@ -68,15 +66,17 @@ export const fetchEmployeeById = async (id: string) => {
     const payload = response.data;
     return payload.data?.employee || payload.employee || payload.data || payload;
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || error.message || 'Failed to fetch employee profile');
+    throw new Error(
+      error.response?.data?.message || error.message || "Failed to fetch employee profile",
+    );
   }
 };
 export const updateMyProfile = async (data: Partial<EmployeeData>) => {
   try {
-    const response = await getAxiosInstance().put('/api/employees/profile/update', data);
+    const response = await getAxiosInstance().put("/api/employees/profile/update", data);
     return response.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || error.message || 'Failed to update profile');
+    throw new Error(error.response?.data?.message || error.message || "Failed to update profile");
   }
 };
 export const fetchProfile = fetchEmployeeById;

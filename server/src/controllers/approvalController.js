@@ -1,25 +1,25 @@
-const Leave = require('../models/Leave');
-const Wfh = require('../models/Wfh');
-const Attendance = require('../models/Attendance');
-const Approval = require('../models/Approval');
-const { sendSuccess, sendError } = require('../utils/response');
+const Leave = require("../models/Leave");
+const Wfh = require("../models/Wfh");
+const Attendance = require("../models/Attendance");
+const Approval = require("../models/Approval");
+const { sendSuccess, sendError } = require("../utils/response");
 
 const formatDateString = (d) => {
   const dt = new Date(d);
   const year = dt.getFullYear();
-  const month = String(dt.getMonth() + 1).padStart(2, '0');
-  const day = String(dt.getDate()).padStart(2, '0');
+  const month = String(dt.getMonth() + 1).padStart(2, "0");
+  const day = String(dt.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
 
 exports.getPendingApprovals = async (req, res) => {
   try {
     // Fetch pending approvals from approvals collection
-    const approvals = await Approval.find({ status: 'PENDING' })
-      .populate('employeeId', 'name designation')
+    const approvals = await Approval.find({ status: "PENDING" })
+      .populate("employeeId", "name designation")
       .lean();
 
-    const records = approvals.map(a => ({
+    const records = approvals.map((a) => ({
       _id: a._id,
       requestType: a.requestType,
       employeeId: a.employeeId,
@@ -31,24 +31,24 @@ exports.getPendingApprovals = async (req, res) => {
       sourceId: a.sourceId || null,
     }));
 
-    return sendSuccess(res, 'Pending approvals fetched successfully', { records });
+    return sendSuccess(res, "Pending approvals fetched successfully", { records });
   } catch (err) {
-    console.error('Error fetching pending approvals:', err);
-    return sendError(res, 'Server error fetching pending approvals', 500);
+    console.error("Error fetching pending approvals:", err);
+    return sendError(res, "Server error fetching pending approvals", 500);
   }
 };
 
 exports.getApprovedRequests = async (req, res) => {
   try {
     // Fetch approved & rejected approvals from approvals collection
-    const approvals = await Approval.find({ status: { $in: ['APPROVED', 'REJECTED'] } })
-      .populate('employeeId', 'name designation')
-      .populate('approvedBy', 'name')
-      .populate('rejectedBy', 'name')
+    const approvals = await Approval.find({ status: { $in: ["APPROVED", "REJECTED"] } })
+      .populate("employeeId", "name designation")
+      .populate("approvedBy", "name")
+      .populate("rejectedBy", "name")
       .lean();
 
-    const records = approvals.map(a => {
-      const isApproved = a.status === 'APPROVED';
+    const records = approvals.map((a) => {
+      const isApproved = a.status === "APPROVED";
       return {
         _id: a._id,
         requestType: a.requestType,
@@ -58,21 +58,17 @@ exports.getApprovedRequests = async (req, res) => {
         reason: a.reason,
         status: a.status,
         appliedDate: a.appliedDate || a.createdAt,
-        approvedDate: isApproved 
-          ? (a.approvedDate || a.updatedAt) 
-          : (a.rejectedAt || a.updatedAt),
-        approvedBy: isApproved 
-          ? (a.approvedBy || null) 
-          : (a.rejectedBy || null),
+        approvedDate: isApproved ? a.approvedDate || a.updatedAt : a.rejectedAt || a.updatedAt,
+        approvedBy: isApproved ? a.approvedBy || null : a.rejectedBy || null,
         sourceId: a.sourceId || null,
       };
     });
     records.sort((a, b) => new Date(b.approvedDate) - new Date(a.approvedDate));
 
-    return sendSuccess(res, 'Approved/rejected requests fetched successfully', { records });
+    return sendSuccess(res, "Approved/rejected requests fetched successfully", { records });
   } catch (err) {
-    console.error('Error fetching approved/rejected requests:', err);
-    return sendError(res, 'Server error fetching approved/rejected requests', 500);
+    console.error("Error fetching approved/rejected requests:", err);
+    return sendError(res, "Server error fetching approved/rejected requests", 500);
   }
 };
 
@@ -87,27 +83,28 @@ exports.approveRequest = async (req, res) => {
     if (approval) {
       sourceType = approval.requestType;
       if (approval.sourceId) {
-        if (sourceType === 'LEAVE') request = await Leave.findById(approval.sourceId);
+        if (sourceType === "LEAVE") request = await Leave.findById(approval.sourceId);
         else request = await Wfh.findById(approval.sourceId);
       }
     } else {
       // treat id as source id
       request = await Leave.findById(id);
-      sourceType = 'LEAVE';
+      sourceType = "LEAVE";
       if (!request) {
         request = await Wfh.findById(id);
-        sourceType = 'WFH';
+        sourceType = "WFH";
       }
       // try to find approval by source
       if (request) approval = await Approval.findOne({ sourceId: request._id });
     }
 
-    if (!request) return sendError(res, 'Request not found', 404);
-    if (request.status !== 'PENDING') return sendError(res, 'Only pending requests can be approved', 400);
+    if (!request) return sendError(res, "Request not found", 404);
+    if (request.status !== "PENDING")
+      return sendError(res, "Only pending requests can be approved", 400);
 
     const approverId = req.user && req.user.id ? req.user.id : null;
 
-    request.status = 'APPROVED';
+    request.status = "APPROVED";
     request.approvedBy = approverId;
     request.approvedAt = new Date();
     await request.save();
@@ -119,10 +116,10 @@ exports.approveRequest = async (req, res) => {
       approval = new Approval({
         employeeId: request.employeeId,
         requestType: sourceType,
-        fromDate: sourceType === 'LEAVE' ? request.fromDate : request.date,
-        toDate: sourceType === 'LEAVE' ? request.toDate : request.date,
+        fromDate: sourceType === "LEAVE" ? request.fromDate : request.date,
+        toDate: sourceType === "LEAVE" ? request.toDate : request.date,
         reason: request.reason,
-        status: 'APPROVED',
+        status: "APPROVED",
         appliedDate: request.createdAt || new Date(),
         approvedDate: new Date(),
         approvedBy: approverId,
@@ -130,7 +127,7 @@ exports.approveRequest = async (req, res) => {
       });
       await approval.save();
     } else {
-      approval.status = 'APPROVED';
+      approval.status = "APPROVED";
       approval.approvedBy = approverId;
       approval.approvedDate = new Date();
       await approval.save();
@@ -143,12 +140,15 @@ exports.approveRequest = async (req, res) => {
       const end = new Date(request.toDate);
       while (cur <= end) {
         const dateStr = formatDateString(cur);
-        const existing = await Attendance.findOne({ employeeId: request.employeeId, date: dateStr });
+        const existing = await Attendance.findOne({
+          employeeId: request.employeeId,
+          date: dateStr,
+        });
         if (!existing) {
           const att = new Attendance({
             employeeId: request.employeeId,
             date: dateStr,
-            status: 'LEAVE',
+            status: "LEAVE",
           });
           await att.save();
         }
@@ -159,18 +159,22 @@ exports.approveRequest = async (req, res) => {
       const dateStr = formatDateString(request.date);
       let attendance = await Attendance.findOne({ employeeId: request.employeeId, date: dateStr });
       if (!attendance) {
-        attendance = new Attendance({ employeeId: request.employeeId, date: dateStr, status: 'WFH' });
+        attendance = new Attendance({
+          employeeId: request.employeeId,
+          date: dateStr,
+          status: "WFH",
+        });
         await attendance.save();
       } else if (!attendance.checkInTime) {
-        attendance.status = 'WFH';
+        attendance.status = "WFH";
         await attendance.save();
       }
     }
 
-    return sendSuccess(res, 'Request approved successfully', { record: request });
+    return sendSuccess(res, "Request approved successfully", { record: request });
   } catch (err) {
-    console.error('Error approving request:', err);
-    return sendError(res, 'Server error approving request', 500);
+    console.error("Error approving request:", err);
+    return sendError(res, "Server error approving request", 500);
   }
 };
 
@@ -192,12 +196,13 @@ exports.rejectRequest = async (req, res) => {
       if (request) approval = await Approval.findOne({ sourceId: request._id });
     }
 
-    if (!request) return sendError(res, 'Request not found', 404);
-    if (request.status !== 'PENDING') return sendError(res, 'Only pending requests can be rejected', 400);
+    if (!request) return sendError(res, "Request not found", 404);
+    if (request.status !== "PENDING")
+      return sendError(res, "Only pending requests can be rejected", 400);
 
     const rejectorId = req.user && req.user.id ? req.user.id : null;
 
-    request.status = 'REJECTED';
+    request.status = "REJECTED";
     request.rejectedBy = rejectorId;
     request.rejectedAt = new Date();
     await request.save();
@@ -207,11 +212,11 @@ exports.rejectRequest = async (req, res) => {
     if (!approval) {
       approval = new Approval({
         employeeId: request.employeeId,
-        requestType: request.fromDate && request.toDate ? 'LEAVE' : 'WFH',
+        requestType: request.fromDate && request.toDate ? "LEAVE" : "WFH",
         fromDate: request.fromDate || request.date,
         toDate: request.toDate || request.date,
         reason: request.reason,
-        status: 'REJECTED',
+        status: "REJECTED",
         appliedDate: request.createdAt || new Date(),
         rejectedAt: new Date(),
         rejectedBy: rejectorId,
@@ -219,7 +224,7 @@ exports.rejectRequest = async (req, res) => {
       });
       await approval.save();
     } else {
-      approval.status = 'REJECTED';
+      approval.status = "REJECTED";
       approval.rejectedBy = rejectorId;
       approval.rejectedAt = new Date();
       await approval.save();
@@ -235,7 +240,7 @@ exports.rejectRequest = async (req, res) => {
         await Attendance.deleteOne({
           employeeId: request.employeeId,
           date: dateStr,
-          status: 'LEAVE',
+          status: "LEAVE",
           checkInTime: { $exists: false },
         });
         cur.setDate(cur.getDate() + 1);
@@ -245,14 +250,14 @@ exports.rejectRequest = async (req, res) => {
       await Attendance.deleteOne({
         employeeId: request.employeeId,
         date: dateStr,
-        status: 'WFH',
+        status: "WFH",
         checkInTime: { $exists: false },
       });
     }
 
-    return sendSuccess(res, 'Request rejected successfully', { record: request });
+    return sendSuccess(res, "Request rejected successfully", { record: request });
   } catch (err) {
-    console.error('Error rejecting request:', err);
-    return sendError(res, 'Server error rejecting request', 500);
+    console.error("Error rejecting request:", err);
+    return sendError(res, "Server error rejecting request", 500);
   }
 };

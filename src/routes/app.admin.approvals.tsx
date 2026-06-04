@@ -14,4 +14,3 @@ function AdminApprovalsRoute() {
 
   return <ApprovalsPage />;
 }
-

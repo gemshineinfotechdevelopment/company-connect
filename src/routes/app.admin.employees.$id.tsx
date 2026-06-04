@@ -36,7 +36,8 @@ function EmployeeProfileRoute() {
   }, [id]);
 
   if (!currentUser) return <Navigate to="/login" />;
-  if (currentUser.role !== "admin" && currentUser.id !== id) return <Navigate to="/app/dashboard" />;
+  if (currentUser.role !== "admin" && currentUser.id !== id)
+    return <Navigate to="/app/dashboard" />;
 
   const handleUpdate = (updatedData: any) => {
     setEmployee((prev: any) => ({

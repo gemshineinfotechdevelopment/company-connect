@@ -23,7 +23,7 @@ function AdminSettings() {
 
   const [companyName, setCompanyName] = useState("Gemshine Infotech");
   const [latitude, setLatitude] = useState<number>(28.6139);
-  const [longitude, setLongitude] = useState<number>(77.2090);
+  const [longitude, setLongitude] = useState<number>(77.209);
   const [allowedRadius, setAllowedRadius] = useState<number>(100);
   const [enforceGeofencing, setEnforceGeofencing] = useState<boolean>(true);
   const [loading, setLoading] = useState(false);
@@ -38,7 +38,7 @@ function AdminSettings() {
         const s = res.data.settings;
         setCompanyName(s.companyName || "Gemshine Infotech");
         setLatitude(Number(s.latitude) || 28.6139);
-        setLongitude(Number(s.longitude) || 77.2090);
+        setLongitude(Number(s.longitude) || 77.209);
         setAllowedRadius(Number(s.allowedRadius) || 100);
         setEnforceGeofencing(s.enforceGeofencing !== false);
       }
@@ -117,7 +117,7 @@ function AdminSettings() {
         }
         toast.error(msg);
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 10000 },
     );
   };
 
@@ -132,7 +132,9 @@ function AdminSettings() {
         <Card className="border-0 shadow-sm ring-1 ring-black/5">
           <CardContent className="py-20 flex flex-col items-center justify-center space-y-4">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <p className="text-sm text-muted-foreground animate-pulse">Loading geofencing configuration...</p>
+            <p className="text-sm text-muted-foreground animate-pulse">
+              Loading geofencing configuration...
+            </p>
           </CardContent>
         </Card>
       ) : (
@@ -143,14 +145,18 @@ function AdminSettings() {
                 <Globe className="h-5 w-5 text-blue-600" />
                 <div>
                   <CardTitle className="text-lg">Company Location & Radius</CardTitle>
-                  <CardDescription>Specify the central office coordinates and allowed radial boundaries.</CardDescription>
+                  <CardDescription>
+                    Specify the central office coordinates and allowed radial boundaries.
+                  </CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="companyName" className="font-semibold text-sm">Company Name</Label>
+                  <Label htmlFor="companyName" className="font-semibold text-sm">
+                    Company Name
+                  </Label>
                   <Input
                     id="companyName"
                     value={companyName}
@@ -163,7 +169,9 @@ function AdminSettings() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="latitude" className="font-semibold text-sm">Latitude</Label>
+                  <Label htmlFor="latitude" className="font-semibold text-sm">
+                    Latitude
+                  </Label>
                   <div className="relative">
                     <Input
                       id="latitude"
@@ -179,7 +187,9 @@ function AdminSettings() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="longitude" className="font-semibold text-sm">Longitude</Label>
+                  <Label htmlFor="longitude" className="font-semibold text-sm">
+                    Longitude
+                  </Label>
                   <div className="relative">
                     <Input
                       id="longitude"
@@ -213,7 +223,9 @@ function AdminSettings() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
                 <div className="space-y-1.5">
-                  <Label htmlFor="allowedRadius" className="font-semibold text-sm">Allowed Radius (meters)</Label>
+                  <Label htmlFor="allowedRadius" className="font-semibold text-sm">
+                    Allowed Radius (meters)
+                  </Label>
                   <div className="relative">
                     <Input
                       id="allowedRadius"
@@ -225,15 +237,20 @@ function AdminSettings() {
                     />
                     <Sliders className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   </div>
-                  <span className="text-xs text-muted-foreground">Employees must be within this circle to check-in.</span>
+                  <span className="text-xs text-muted-foreground">
+                    Employees must be within this circle to check-in.
+                  </span>
                 </div>
 
                 <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-50/50 border border-blue-100/50">
                   <ShieldAlert className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
                   <div className="space-y-1">
-                    <span className="text-xs font-semibold text-blue-900">Map Visualization Helper</span>
+                    <span className="text-xs font-semibold text-blue-900">
+                      Map Visualization Helper
+                    </span>
                     <p className="text-[11px] leading-relaxed text-blue-700">
-                      Standard settings are 100 meters. Radius boundaries are calculated mathematically via the Haversine model on standard global ellipsoids.
+                      Standard settings are 100 meters. Radius boundaries are calculated
+                      mathematically via the Haversine model on standard global ellipsoids.
                     </p>
                   </div>
                 </div>
@@ -245,9 +262,16 @@ function AdminSettings() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between gap-4">
                 <div className="space-y-1 flex-1">
-                  <Label htmlFor="enforceGeofencing" className="font-bold text-base text-foreground">Enforce Geofencing Bounds</Label>
+                  <Label
+                    htmlFor="enforceGeofencing"
+                    className="font-bold text-base text-foreground"
+                  >
+                    Enforce Geofencing Bounds
+                  </Label>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    When enabled, employees will be strictly blocked from checking in if they are outside the configured allowed radius. If disabled, they can check in anywhere, but distance violations will be flagged on attendance reports.
+                    When enabled, employees will be strictly blocked from checking in if they are
+                    outside the configured allowed radius. If disabled, they can check in anywhere,
+                    but distance violations will be flagged on attendance reports.
                   </p>
                 </div>
                 <Switch
