@@ -237,7 +237,7 @@ export async function fetchProfile() {
 }
 
 export async function fetchEmployees() {
-  const response = await request<{ employees: ApiResource[] }>("/api/admin/employees");
+  const response = await request<{ employees: ApiResource[] }>("/api/employees/directory");
   return response.employees.map(mapEmployee);
 }
 

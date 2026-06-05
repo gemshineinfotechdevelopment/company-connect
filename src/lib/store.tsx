@@ -184,7 +184,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           notifications: notifs,
         }));
       } else {
-        const [myLeaves, myWfh, myAttendance, myTasks] = await Promise.all([
+        const [employeeList, myLeaves, myWfh, myAttendance, myTasks] = await Promise.all([
+          api.fetchEmployees(),
           api.fetchMyLeaves(),
           api.fetchMyWfh(),
           api.fetchMyAttendance(
@@ -196,6 +197,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
         setState((s) => ({
           ...s,
+          users: employeeList,
           holidays: holidays.holidays,
           messages,
           leaves: myLeaves.leaves,

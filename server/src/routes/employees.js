@@ -9,5 +9,6 @@ router.put(
   employeeController.updateProfile,
 );
 router.get("/upcoming-birthdays", employeeController.upcomingBirthdays);
+router.get("/directory", employeeController.list);
 
 module.exports = router;
