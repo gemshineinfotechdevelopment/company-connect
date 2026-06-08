@@ -15,8 +15,8 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const { login, currentUser } = useStore();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("admin@gemshine.dev");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { isInstallable, installApp } = usePWAInstall();
   const [isIOS, setIsIOS] = useState(false);
@@ -45,16 +45,6 @@ function LoginPage() {
     }
     toast.success(`Welcome, ${u.name.split(" ")[0]}`);
     navigate({ to: u.role === "admin" ? "/app/admin" : "/app/dashboard" });
-  };
-
-  const fillDemo = (role: "admin" | "employee") => {
-    if (role === "admin") {
-      setEmail("admin@example.com");
-      setPassword("password123");
-    } else {
-      setEmail("employee@example.com");
-      setPassword("password123");
-    }
   };
 
   return (
@@ -136,30 +126,6 @@ function LoginPage() {
               {loading ? "Signing in…" : "Sign in"}
             </Button>
           </form>
-
-          <div className="rounded-lg border border-border bg-muted/40 p-3.5 space-y-2">
-            <div className="text-[11px] uppercase tracking-wider font-medium text-muted-foreground">
-              Demo accounts
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => fillDemo("admin")}
-                className="flex-1 text-left rounded-md bg-background border border-border px-2.5 py-2 text-xs hover:border-primary transition-colors"
-              >
-                <div className="font-medium">Admin</div>
-                <div className="text-muted-foreground truncate">admin@example.com</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemo("employee")}
-                className="flex-1 text-left rounded-md bg-background border border-border px-2.5 py-2 text-xs hover:border-primary transition-colors"
-              >
-                <div className="font-medium">Employee</div>
-                <div className="text-muted-foreground truncate">employee@example.com </div>
-              </button>
-            </div>
-          </div>
 
           {isInstallable && (
             <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-4 space-y-3 dark:border-blue-900/30 dark:bg-blue-950/20 animate-in fade-in slide-in-from-bottom-2 duration-300">
