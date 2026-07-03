@@ -80,3 +80,29 @@ export const updateMyProfile = async (data: Partial<EmployeeData>) => {
   }
 };
 export const fetchProfile = fetchEmployeeById;
+
+export const changePassword = async (data: any) => {
+  try {
+    const response = await getAxiosInstance().put("/api/employees/change-password", data);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
+      const msg = error.response.data.errors.map((e: any) => e.msg).join(", ");
+      throw new Error(`${error.response.data.message || "Validation failed"}: ${msg}`);
+    }
+    throw new Error(error.response?.data?.message || error.message || "Failed to change password");
+  }
+};
+
+export const adminResetPassword = async (id: string, data: any) => {
+  try {
+    const response = await getAxiosInstance().put(`/api/admin/employees/${id}/reset-password`, data);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
+      const msg = error.response.data.errors.map((e: any) => e.msg).join(", ");
+      throw new Error(`${error.response.data.message || "Validation failed"}: ${msg}`);
+    }
+    throw new Error(error.response?.data?.message || error.message || "Failed to reset password");
+  }
+};

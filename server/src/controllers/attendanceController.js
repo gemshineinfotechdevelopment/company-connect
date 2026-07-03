@@ -249,6 +249,7 @@ exports.myMonthlySummaries = async (req, res) => {
     let totalAbsent = 0;
     let totalWfh = 0;
     let totalLeave = 0;
+    let totalHoliday = 0;
     let totalHours = 0;
 
     records.forEach((record) => {
@@ -262,6 +263,8 @@ exports.myMonthlySummaries = async (req, res) => {
         totalAbsent += 1;
       } else if (record.status === "LEAVE") {
         totalLeave += 1;
+      } else if (record.status === "HOLIDAY") {
+        totalHoliday += 1;
       }
 
       if (record.totalHours) {
@@ -279,6 +282,7 @@ exports.myMonthlySummaries = async (req, res) => {
       totalAbsent,
       totalWfh,
       totalLeave,
+      totalHoliday,
       totalHours: parseFloat(totalHours.toFixed(2)),
     };
 
@@ -438,6 +442,7 @@ exports.generateMonthlySummary = async (req, res) => {
           totalAbsent: 0,
           totalWfh: 0,
           totalLeave: 0,
+          totalHoliday: 0,
           totalHours: 0,
         };
       }
@@ -453,6 +458,8 @@ exports.generateMonthlySummary = async (req, res) => {
         sum.totalAbsent += 1;
       } else if (record.status === "LEAVE") {
         sum.totalLeave += 1;
+      } else if (record.status === "HOLIDAY") {
+        sum.totalHoliday += 1;
       }
 
       if (record.totalHours) {

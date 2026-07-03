@@ -21,10 +21,11 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Search, Eye, Edit } from "lucide-react";
+import { Plus, Trash2, Search, Eye, Edit, Key } from "lucide-react";
 import { toast } from "sonner";
 import { AddEmployeeModal } from "@/components/AddEmployeeModal";
 import { EditEmployeeModal } from "@/components/EditEmployeeModal";
+import { ResetPasswordModal } from "@/components/ResetPasswordModal";
 
 export const Route = createFileRoute("/app/admin/employees")({
   component: AdminEmployees,
@@ -37,6 +38,7 @@ function AdminEmployees() {
   const { currentUser, state, removeUser } = useStore();
   const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
 
   const [query, setQuery] = useState("");
@@ -154,6 +156,11 @@ function AdminEmployees() {
     setEditOpen(true);
   };
 
+  const handleResetPasswordClick = (employee: any) => {
+    setSelectedEmployee(employee);
+    setResetOpen(true);
+  };
+
   return (
     <div className="p-6 sm:p-8 max-w-full">
       {!isProfileRoute && (
@@ -173,6 +180,13 @@ function AdminEmployees() {
             <EditEmployeeModal
               open={editOpen}
               onOpenChange={setEditOpen}
+              employee={selectedEmployee}
+            />
+          )}
+          {selectedEmployee && (
+            <ResetPasswordModal
+              open={resetOpen}
+              onOpenChange={setResetOpen}
               employee={selectedEmployee}
             />
           )}
@@ -323,6 +337,15 @@ function AdminEmployees() {
                               onClick={() => handleEditClick(u)}
                             >
                               <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 text-muted-foreground hover:text-amber-600"
+                              title="Reset Password"
+                              onClick={() => handleResetPasswordClick(u)}
+                            >
+                              <Key className="h-4 w-4" />
                             </Button>
                             <Button
                               size="icon"

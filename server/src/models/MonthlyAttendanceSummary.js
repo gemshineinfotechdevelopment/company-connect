@@ -10,6 +10,7 @@ const monthlySummarySchema = new mongoose.Schema(
     totalAbsent: { type: Number, default: 0 },
     totalWfh: { type: Number, default: 0 },
     totalLeave: { type: Number, default: 0 },
+    totalHoliday: { type: Number, default: 0 },
     totalHours: { type: Number, default: 0 },
   },
   { timestamps: true },

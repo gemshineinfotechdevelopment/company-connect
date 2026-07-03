@@ -160,3 +160,52 @@ exports.upcomingBirthdays = async (req, res) => {
     return sendError(res, "Server error");
   }
 };
+
+exports.changePassword = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return sendError(res, "Validation failed", 400, { errors: errors.array() });
+
+    const { currentPassword, newPassword } = req.body;
+    const emp = await Employee.findById(req.user.id);
+    if (!emp) return sendError(res, "Employee not found", 404);
+
+    const valid = await bcrypt.compare(currentPassword, emp.password);
+    if (!valid) return sendError(res, "Invalid current password", 400);
+
+    const salt = await bcrypt.genSalt(10);
+    const hashed = await bcrypt.hash(newPassword, salt);
+
+    emp.password = hashed;
+    await emp.save();
+
+    return sendSuccess(res, "Password changed successfully", {});
+  } catch (err) {
+    console.error(err);
+    return sendError(res, "Server error");
+  }
+};
+
+exports.adminResetPassword = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return sendError(res, "Validation failed", 400, { errors: errors.array() });
+
+    const { newPassword } = req.body;
+    const emp = await Employee.findById(req.params.id);
+    if (!emp) return sendError(res, "Employee not found", 404);
+
+    const salt = await bcrypt.genSalt(10);
+    const hashed = await bcrypt.hash(newPassword, salt);
+
+    emp.password = hashed;
+    await emp.save();
+
+    return sendSuccess(res, "Password reset successfully", {});
+  } catch (err) {
+    console.error(err);
+    return sendError(res, "Server error");
+  }
+};

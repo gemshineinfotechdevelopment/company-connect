@@ -29,21 +29,17 @@ const initCronJobs = () => {
       const endOfToday = new Date();
       endOfToday.setHours(23, 59, 59, 999);
 
+      // Check if today is weekend (Saturday = 6, Sunday = 0)
+      const dayOfWeek = new Date().getDay();
+      if (dayOfWeek === 0) {
+        console.log(`Cron: Today is Sunday. Skipping absent marks.`);
+        return;
+      }
+
       // Check if today is a holiday
       const holiday = await Holiday.findOne({
         date: { $gte: startOfToday, $lte: endOfToday },
       });
-      if (holiday) {
-        console.log(`Cron: Today is a holiday (${holiday.name}). Skipping absent marks.`);
-        return;
-      }
-
-      // Check if today is weekend (Saturday = 6, Sunday = 0)
-      const dayOfWeek = new Date().getDay();
-      if (dayOfWeek === 0 || dayOfWeek === 6) {
-        console.log(`Cron: Today is weekend. Skipping absent marks.`);
-        return;
-      }
 
       for (const emp of employees) {
         const employeeId = emp._id;
@@ -55,7 +51,6 @@ const initCronJobs = () => {
           fromDate: { $lte: endOfToday },
           toDate: { $gte: startOfToday },
         });
-        if (activeLeave) continue;
 
         // Check if employee has approved WFH today
         const activeWfh = await Wfh.findOne({
@@ -63,17 +58,22 @@ const initCronJobs = () => {
           status: "APPROVED",
           date: { $gte: startOfToday, $lte: endOfToday },
         });
-        if (activeWfh) continue;
 
         // Check attendance record
         let attendance = await Attendance.findOne({ employeeId, date: today });
 
         if (!attendance) {
-          // Did not check in -> mark as absent
+          let finalStatus = "ABSENT";
+          if (activeLeave) {
+            finalStatus = "LEAVE";
+          } else if (holiday) {
+            finalStatus = "HOLIDAY";
+          }
+
           attendance = new Attendance({
             employeeId,
             date: today,
-            status: "ABSENT",
+            status: finalStatus,
           });
           await attendance.save();
         } else {

@@ -115,7 +115,7 @@ function AttendancePage() {
   const [viewMode, setViewMode] = useState<"month" | "all">("all");
   const [month, setMonth] = useState(String(new Date().getMonth() + 1).padStart(2, "0"));
   const [year, setYear] = useState(String(new Date().getFullYear()));
-  const [statusFilter, setStatusFilter] = useState<"all" | "PRESENT" | "ABSENT" | "WFH" | "LEAVE">(
+  const [statusFilter, setStatusFilter] = useState<"all" | "PRESENT" | "ABSENT" | "WFH" | "LEAVE" | "HOLIDAY">(
     "all",
   );
 
@@ -553,6 +553,7 @@ function AttendancePage() {
                     <SelectItem value="ABSENT">Absent</SelectItem>
                     <SelectItem value="WFH">Work From Home</SelectItem>
                     <SelectItem value="LEAVE">Leave</SelectItem>
+                    <SelectItem value="HOLIDAY">Holiday</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -747,6 +748,7 @@ function AttendancePage() {
                     <TableHead className="text-center">Present</TableHead>
                     <TableHead className="text-center">WFH</TableHead>
                     <TableHead className="text-center">Leave</TableHead>
+                    <TableHead className="text-center">Holiday</TableHead>
                     <TableHead className="text-center">Absent</TableHead>
                     <TableHead className="text-right">Total Hrs</TableHead>
                   </TableRow>
@@ -768,6 +770,9 @@ function AttendancePage() {
                         <TableCell className="text-center text-blue-600">{s.totalWfh}</TableCell>
                         <TableCell className="text-center text-yellow-600">
                           {s.totalLeave}
+                        </TableCell>
+                        <TableCell className="text-center text-purple-600">
+                          {s.totalHoliday || 0}
                         </TableCell>
                         <TableCell className="text-center text-red-600">{s.totalAbsent}</TableCell>
                         <TableCell className="text-right font-medium">

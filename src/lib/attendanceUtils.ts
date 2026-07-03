@@ -2,7 +2,7 @@
  * Utility functions for attendance status badges and formatting
  */
 
-export type AttendanceStatus = "PRESENT" | "ABSENT" | "WFH" | "LEAVE";
+export type AttendanceStatus = "PRESENT" | "ABSENT" | "WFH" | "LEAVE" | "HOLIDAY";
 
 export interface StatusBadgeConfig {
   label: string;
@@ -43,6 +43,13 @@ export const getStatusBadgeConfig = (status: AttendanceStatus): StatusBadgeConfi
         bgColor: "bg-yellow-100",
         textColor: "text-yellow-800",
         borderColor: "border-yellow-300",
+      };
+    case "HOLIDAY":
+      return {
+        label: "Holiday",
+        bgColor: "bg-purple-100",
+        textColor: "text-purple-800",
+        borderColor: "border-purple-300",
       };
     default:
       return {

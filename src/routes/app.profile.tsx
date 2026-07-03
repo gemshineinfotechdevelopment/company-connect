@@ -1,7 +1,7 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { useStore } from "@/lib/store";
-import { updateMyProfile } from "@/services/employeeService";
+import { updateMyProfile, changePassword } from "@/services/employeeService";
 import { PageHeader } from "@/components/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -64,6 +64,13 @@ function ProfilePage() {
   });
   const [skills, setSkills] = useState<string[]>(currentUser?.skills ?? []);
 
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordLoading, setPasswordLoading] = useState(false);
+
   if (!currentUser) return <Navigate to="/login" />;
 
   const initials = currentUser.name
@@ -110,6 +117,31 @@ function ProfilePage() {
       toast.success("Profile updated");
     } catch (err: any) {
       toast.error(err.message || "Failed to update profile");
+    }
+  };
+
+  const onPasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+    if (passwordForm.newPassword.length < 8) {
+      toast.error("New password must be at least 8 characters");
+      return;
+    }
+    try {
+      setPasswordLoading(true);
+      await changePassword({
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+      });
+      toast.success("Password changed successfully");
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (err: any) {
+      toast.error(err.message || "Failed to change password");
+    } finally {
+      setPasswordLoading(false);
     }
   };
 
@@ -457,6 +489,57 @@ function ProfilePage() {
             </Button>
           </div>
         </form>
+
+        <div className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Lock className="h-4 w-4 text-blue-600" /> Change password
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={onPasswordChange} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field label="Current password">
+                    <Input
+                      type="password"
+                      value={passwordForm.currentPassword}
+                      onChange={(e) =>
+                        setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
+                      }
+                      required
+                    />
+                  </Field>
+                  <Field label="New password">
+                    <Input
+                      type="password"
+                      value={passwordForm.newPassword}
+                      onChange={(e) =>
+                        setPasswordForm({ ...passwordForm, newPassword: e.target.value })
+                      }
+                      required
+                    />
+                  </Field>
+                  <Field label="Confirm new password" className="sm:col-span-2">
+                    <Input
+                      type="password"
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) =>
+                        setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
+                      }
+                      required
+                    />
+                  </Field>
+                </div>
+                <div className="flex justify-end">
+                  <Button type="submit" variant="outline" disabled={passwordLoading}>
+                    {passwordLoading ? "Updating..." : "Update password"}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Hidden anchor for unused icon */}
         <span className="hidden">
