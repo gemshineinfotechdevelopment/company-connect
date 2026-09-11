@@ -220,7 +220,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!token || !currentUser) return;
 
-    const socketUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+    const socketUrl =
+      import.meta.env.VITE_API_BASE_URL ||
+      (typeof window !== "undefined" && window.location.origin.startsWith("http")
+        ? window.location.origin
+        : "http://localhost:5009");
     const socket = io(socketUrl);
 
     socket.on("connect", () => {

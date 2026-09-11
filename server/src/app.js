@@ -25,10 +25,15 @@ const errorHandler = require("./middlewares/errorHandler");
 dotenv.config();
 
 const app = express();
+const allowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(",").flatMap((url) => {
+      const trimmed = url.trim();
+      return [trimmed, trimmed.replace(/\/$/, "")];
+    })
+  : true;
+
 const corsOptions = {
-  origin: process.env.CLIENT_URL
-    ? [process.env.CLIENT_URL, process.env.CLIENT_URL.replace(/\/$/, "")]
-    : true,
+  origin: allowedOrigins,
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
