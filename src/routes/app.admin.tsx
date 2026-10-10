@@ -33,7 +33,7 @@ function AdminOverview() {
 
   const today = useMemo(() => new Date(), []);
   const todayKey = `gemshine.birthday-popup-seen.${currentUser.id}`;
-  const employees = state.users.filter((u) => u.role === "employee");
+  const employees = state.users.filter((u) => u.status !== "inactive");
   const upcomingBirthdays = useMemo(
     () => getUpcomingBirthdays(employees, 30, today),
     [employees, today],

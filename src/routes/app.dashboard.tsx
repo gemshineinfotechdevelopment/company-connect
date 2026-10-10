@@ -81,7 +81,7 @@ function EmployeeDashboard() {
 
   const today = useMemo(() => new Date(), []);
   const todayKey = `gemshine.birthday-popup-seen.${currentUser?.id ?? ""}`;
-  const employees = state.users.filter((u) => u.role === "employee");
+  const employees = state.users.filter((u) => u.status !== "inactive");
   const upcomingBirthdays = useMemo(
     () => getUpcomingBirthdays(employees, 30, today),
     [employees, today],
@@ -270,24 +270,20 @@ function EmployeeDashboard() {
         />
       </div>
 
-      <div className="mt-6">
-        <BirthdayPanel title="Upcoming Birthdays" employees={upcomingBirthdays} highlightToday />
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6">
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-base">Today's attendance</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-lg border border-border p-4">
+            <div className="flex flex-row gap-4">
+              <div className="flex-1 rounded-lg border border-border p-4">
                 <div className="text-xs text-muted-foreground">Check in</div>
                 <div className="text-xl font-semibold mt-1">
                   {formatTime(todayRecord?.checkInTime)}
                 </div>
               </div>
-              <div className="rounded-lg border border-border p-4">
+              <div className="flex-1 rounded-lg border border-border p-4">
                 <div className="text-xs text-muted-foreground">Check out</div>
                 <div className="text-xl font-semibold mt-1">
                   {formatTime(todayRecord?.checkOutTime)}
@@ -353,6 +349,10 @@ function EmployeeDashboard() {
             )}
           </CardContent>
         </Card>
+      </div>
+
+      <div className="mt-6">
+        <BirthdayPanel title="Upcoming Birthdays" employees={upcomingBirthdays} highlightToday />
       </div>
 
       <BirthdayPopup

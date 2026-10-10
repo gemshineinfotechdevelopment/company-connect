@@ -101,7 +101,14 @@ function mapEmployee(employee: ApiResource): User {
   const status =
     getString(employee.status, "active").toLowerCase() === "inactive" ? "inactive" : "active";
   const joiningDate = getString(employee.joiningDate);
-  const dob = getString(employee.dob);
+  const rawDob = getString(employee.dob) || getString(employee.dateOfBirth);
+  const dateOfBirth = rawDob
+    ? rawDob.includes("T")
+      ? rawDob.split("T")[0]
+      : rawDob.length >= 10
+        ? rawDob.slice(0, 10)
+        : new Date(rawDob).toISOString().slice(0, 10)
+    : undefined;
 
   return {
     id: getString(employee._id),
@@ -119,7 +126,7 @@ function mapEmployee(employee: ApiResource): User {
     designation: getString(employee.designation),
     manager: getString(employee.manager),
     joinedDate: joiningDate ? new Date(joiningDate).toISOString().slice(0, 10) : undefined,
-    dateOfBirth: dob ? new Date(dob).toISOString().slice(0, 10) : undefined,
+    dateOfBirth,
     gender: getStringOrUndefined(employee.gender) as "male" | "female" | "other" | undefined,
     bloodGroup: getStringOrUndefined(employee.bloodGroup),
     address: getStringOrUndefined(employee.address),
