@@ -118,14 +118,16 @@ function AdminOverview() {
             {pendingLeaves.slice(0, 5).map((l) => {
               const u = userById(l.userId);
               return (
-                <div key={l.id} className="flex items-center justify-between">
-                  <div className="text-sm">
+                <div key={l.id} className="flex items-start justify-between gap-3">
+                  <div className="text-sm flex-1 min-w-0">
                     <div className="font-medium">{u?.name}</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-muted-foreground break-words line-clamp-2" title={l.reason}>
                       {l.fromDate} → {l.toDate} · {l.reason}
                     </div>
                   </div>
-                  <StatusBadge status={l.status} />
+                  <div className="shrink-0 mt-0.5">
+                    <StatusBadge status={l.status} />
+                  </div>
                 </div>
               );
             })}
@@ -149,14 +151,16 @@ function AdminOverview() {
             {pendingWfh.slice(0, 5).map((w) => {
               const u = userById(w.userId);
               return (
-                <div key={w.id} className="flex items-center justify-between">
-                  <div className="text-sm">
+                <div key={w.id} className="flex items-start justify-between gap-3">
+                  <div className="text-sm flex-1 min-w-0">
                     <div className="font-medium">{u?.name}</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-muted-foreground break-words line-clamp-2" title={w.reason}>
                       {w.date} · {w.reason}
                     </div>
                   </div>
-                  <StatusBadge status={w.status} />
+                  <div className="shrink-0 mt-0.5">
+                    <StatusBadge status={w.status} />
+                  </div>
                 </div>
               );
             })}

@@ -76,12 +76,6 @@ const initCronJobs = () => {
             status: finalStatus,
           });
           await attendance.save();
-        } else {
-          // Checked in, but did not check out -> mark as absent
-          if (!attendance.checkOutTime) {
-            attendance.status = "ABSENT";
-            await attendance.save();
-          }
         }
       }
       console.log(`Cron: Attendance check completed for ${today}`);
