@@ -270,8 +270,8 @@ function EmployeeDashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6">
-        <Card className="lg:col-span-2">
+      <div className="mt-6">
+        <Card>
           <CardHeader>
             <CardTitle className="text-base">Today's attendance</CardTitle>
           </CardHeader>
@@ -306,7 +306,13 @@ function EmployeeDashboard() {
             </div>
           </CardContent>
         </Card>
+      </div>
 
+      <div className="mt-6">
+        <BirthdayPanel title="Upcoming Birthdays" employees={upcomingBirthdays} highlightToday />
+      </div>
+
+      <div className="mt-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Recent requests</CardTitle>
@@ -349,10 +355,6 @@ function EmployeeDashboard() {
             )}
           </CardContent>
         </Card>
-      </div>
-
-      <div className="mt-6">
-        <BirthdayPanel title="Upcoming Birthdays" employees={upcomingBirthdays} highlightToday />
       </div>
 
       <BirthdayPopup
