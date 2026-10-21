@@ -36,10 +36,15 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(event.request.url);
 
-  // Skip API calls and websocket traffic
+  // Skip API calls, websocket traffic, Vite internal paths, and local development
   if (
     url.pathname.includes("/api/") ||
     url.pathname.includes("socket.io") ||
+    url.pathname.startsWith("/@") ||
+    url.pathname.includes("/node_modules/") ||
+    url.pathname.includes("/src/") ||
+    url.hostname === "localhost" ||
+    url.hostname === "127.0.0.1" ||
     url.hostname !== self.location.hostname
   ) {
     return;

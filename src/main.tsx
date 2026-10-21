@@ -21,16 +21,33 @@ if (!rootElement.innerHTML) {
   );
 }
 
-// Register Service Worker for PWA
+// Register Service Worker for PWA (production only)
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/sw.js")
-      .then((registration) => {
-        console.log("ServiceWorker registered successfully: ", registration.scope);
-      })
-      .catch((err) => {
-        console.warn("ServiceWorker registration failed: ", err);
+  if (import.meta.env.PROD) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((registration) => {
+          console.log("ServiceWorker registered successfully: ", registration.scope);
+        })
+        .catch((err) => {
+          console.warn("ServiceWorker registration failed: ", err);
+        });
+    });
+  } else {
+    // In development, unregister any active service worker to avoid stale chunk caching and duplicate React instances
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for (const registration of registrations) {
+        registration.unregister();
+      }
+    });
+    // Also clear CacheStorage in dev if present
+    if ("caches" in window) {
+      caches.keys().then((names) => {
+        for (const name of names) {
+          caches.delete(name);
+        }
       });
-  });
+    }
+  }
 }
