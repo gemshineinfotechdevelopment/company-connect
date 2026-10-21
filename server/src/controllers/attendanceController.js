@@ -18,7 +18,8 @@ exports.checkIn = async (req, res) => {
   try {
     const employeeId = req.user.id;
     const date = getTodayDateString();
-    const { latitude, longitude, accuracy, deviceInfo, browserDetails } = req.body;
+    const { latitude, longitude, accuracy, deviceInfo, browserDetails, lateReason, selfie } =
+      req.body;
 
     // Check for approved leave
     const Leave = require("../models/Leave");
@@ -76,36 +77,74 @@ exports.checkIn = async (req, res) => {
       }
     }
 
+    // Process & store live selfie to prevent proxy attendance
+    let selfieUrl = undefined;
+    if (selfie && typeof selfie === "string" && selfie.startsWith("data:image")) {
+      const fs = require("fs");
+      const path = require("path");
+      try {
+        const matches = selfie.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
+        if (matches && matches.length === 3) {
+          const ext = matches[1] === "jpeg" ? "jpg" : matches[1];
+          const buffer = Buffer.from(matches[2], "base64");
+          const uploadDir = path.join(__dirname, "../../uploads/selfies");
+          if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+          }
+          const filename = `selfie_${employeeId}_${Date.now()}.${ext}`;
+          const filePath = path.join(uploadDir, filename);
+          fs.writeFileSync(filePath, buffer);
+          selfieUrl = `/uploads/selfies/${filename}`;
+        }
+      } catch (e) {
+        console.error("Failed to save selfie image:", e);
+      }
+    }
+
     const ipAddress =
       req.headers["x-forwarded-for"] || req.ip || req.socket.remoteAddress || "Unknown IP";
     const status = activeWfh ? "WFH" : "PRESENT";
 
+    // Check if user is already checked in or already has a pending approval for today
     let attendance = await Attendance.findOne({ employeeId, date });
     if (attendance) {
       if (attendance.checkInTime) {
         return sendError(res, "Already checked in for today", 400);
-      } else {
-        attendance.checkInTime = new Date();
-        attendance.status = status;
-        attendance.checkInLatitude = latitude ? Number(latitude) : undefined;
-        attendance.checkInLongitude = longitude ? Number(longitude) : undefined;
-        attendance.checkInDistance = distance;
-        attendance.checkInAccuracy = accuracy ? Number(accuracy) : undefined;
-        attendance.checkInOutsideRadius = outsideRadius;
-        attendance.checkInIpAddress = ipAddress;
-        attendance.checkInDeviceInfo = deviceInfo || "Unknown Device";
-        attendance.checkInBrowserDetails = browserDetails || "Unknown Browser";
-
-        await attendance.save();
-        return sendSuccess(res, "Checked in successfully", { attendance });
+      }
+      if (attendance.lateStatus === "PENDING_APPROVAL") {
+        return sendError(
+          res,
+          "Your late check-in request has already been submitted and is awaiting Admin approval.",
+          400,
+        );
       }
     }
 
-    attendance = new Attendance({
-      employeeId,
-      date,
-      status,
-      checkInTime: new Date(),
+    // Time calculations in Asia/Kolkata (IST)
+    const now = new Date();
+    const istTimeStr = now.toLocaleTimeString("en-GB", {
+      timeZone: "Asia/Kolkata",
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    const [currHours, currMins, currSecs] = istTimeStr.split(":").map(Number);
+    const currTotalSecs = currHours * 3600 + currMins * 60 + currSecs;
+
+    const cutoffTime = (settings && settings.lateCheckInCutoffTime) || "10:15";
+    const [cutoffHours, cutoffMins] = cutoffTime.split(":").map(Number);
+    const cutoffTotalSecs = cutoffHours * 3600 + cutoffMins * 60;
+
+    const enforceLateApproval =
+      settings && settings.enforceLateCheckInApproval !== undefined
+        ? settings.enforceLateCheckInApproval
+        : true;
+    const isLate = currTotalSecs > cutoffTotalSecs;
+    const isRegularEmployee = req.user.role !== "ADMIN";
+
+    const checkInLocationData = {
+      checkInSelfieUrl: selfieUrl,
       checkInLatitude: latitude ? Number(latitude) : undefined,
       checkInLongitude: longitude ? Number(longitude) : undefined,
       checkInDistance: distance,
@@ -114,7 +153,115 @@ exports.checkIn = async (req, res) => {
       checkInIpAddress: ipAddress,
       checkInDeviceInfo: deviceInfo || "Unknown Device",
       checkInBrowserDetails: browserDetails || "Unknown Browser",
-    });
+    };
+
+    // If regular employee tries to check in after cutoff time (default 10:15 AM)
+    if (isRegularEmployee && enforceLateApproval && isLate) {
+      const Approval = require("../models/Approval");
+      const Notification = require("../models/Notification");
+
+      const time12h = now.toLocaleTimeString("en-US", {
+        timeZone: "Asia/Kolkata",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+
+      const lateReason =
+        req.body.lateReason && req.body.lateReason.trim()
+          ? req.body.lateReason.trim()
+          : `Late check-in requested at ${time12h}`;
+
+      if (!attendance) {
+        attendance = new Attendance({
+          employeeId,
+          date,
+          status: "PENDING",
+          lateStatus: "PENDING_APPROVAL",
+          lateReason,
+          requestedCheckInTime: now,
+          ...checkInLocationData,
+        });
+      } else {
+        attendance.status = "PENDING";
+        attendance.lateStatus = "PENDING_APPROVAL";
+        attendance.lateReason = lateReason;
+        attendance.requestedCheckInTime = now;
+        Object.assign(attendance, checkInLocationData);
+      }
+      await attendance.save();
+
+      // Create Approval record
+      const approval = new Approval({
+        employeeId,
+        requestType: "LATE_CHECKIN",
+        fromDate: now,
+        toDate: now,
+        reason: lateReason,
+        status: "PENDING",
+        sourceId: attendance._id,
+        selfieUrl: checkInLocationData.checkInSelfieUrl,
+      });
+      await approval.save();
+
+      attendance.approvalId = approval._id;
+      await attendance.save();
+
+      // Send notifications to all Admins
+      const employee = await Employee.findById(employeeId);
+      const empName = employee ? employee.name : "Employee";
+      const admins = await Employee.find({ role: "ADMIN" });
+
+      const notifMessage = `${empName} requested late check-in approval (requested at ${time12h}). Reason: ${lateReason}`;
+
+      for (const admin of admins) {
+        const notif = new Notification({
+          recipient: admin._id,
+          message: notifMessage,
+          type: "LATE_CHECKIN_REQUEST",
+          relatedId: approval._id,
+        });
+        await notif.save();
+      }
+
+      const io = req.app.get("io");
+      if (io) {
+        io.emit("admin_notification", {
+          message: notifMessage,
+          type: "LATE_CHECKIN_REQUEST",
+          employeeId,
+          employeeName: empName,
+          approvalId: approval._id,
+        });
+      }
+
+      return sendSuccess(
+        res,
+        `It is past ${cutoffTime}. Your check-in request has been sent to Admin for approval.`,
+        {
+          attendance,
+          requiresApproval: true,
+          lateStatus: "PENDING_APPROVAL",
+        },
+      );
+    }
+
+    // Normal on-time check-in (or Admin check-in)
+    if (!attendance) {
+      attendance = new Attendance({
+        employeeId,
+        date,
+        status,
+        checkInTime: now,
+        lateStatus: "NONE",
+        ...checkInLocationData,
+      });
+    } else {
+      attendance.checkInTime = now;
+      attendance.status = status;
+      attendance.lateStatus = "NONE";
+      Object.assign(attendance, checkInLocationData);
+    }
     await attendance.save();
 
     return sendSuccess(res, "Checked in successfully", { attendance });
@@ -132,6 +279,13 @@ exports.checkOut = async (req, res) => {
 
     const attendance = await Attendance.findOne({ employeeId, date });
     if (!attendance || !attendance.checkInTime) {
+      if (attendance && attendance.lateStatus === "PENDING_APPROVAL") {
+        return sendError(
+          res,
+          "Your check-in is pending Admin approval. You cannot check out yet.",
+          400,
+        );
+      }
       return sendError(res, "No check-in found for today", 400);
     }
     if (attendance.checkOutTime) {

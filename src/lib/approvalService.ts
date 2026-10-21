@@ -47,7 +47,7 @@ export interface EmployeeDetails {
 export interface ApprovalRequest {
   _id: string;
   employeeId: EmployeeDetails;
-  requestType: "LEAVE" | "WFH";
+  requestType: "LEAVE" | "WFH" | "LATE_CHECKIN";
   fromDate: string;
   toDate: string;
   reason: string;
@@ -55,6 +55,7 @@ export interface ApprovalRequest {
   appliedDate: string;
   approvedDate?: string;
   approvedBy?: EmployeeDetails;
+  selfieUrl?: string;
 }
 
 export const fetchPendingApprovals = async () => {

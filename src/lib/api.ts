@@ -519,7 +519,7 @@ function mapNotification(notif: ApiResource): NotificationItem {
     id: getString(notif._id),
     recipient: getString(notif.recipient),
     message: getString(notif.message),
-    type: getString(notif.type) as "TASK_ASSIGNED" | "TASK_OVERDUE" | "TASK_COMPLETED",
+    type: getString(notif.type) as NotificationItem["type"],
     isRead: typeof notif.isRead === "boolean" ? notif.isRead : false,
     relatedId: getStringOrUndefined(notif.relatedId),
     createdAt: getString(notif.createdAt) || new Date().toISOString(),

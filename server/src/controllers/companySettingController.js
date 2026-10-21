@@ -12,6 +12,8 @@ exports.getSettings = async (req, res) => {
         longitude: 77.209,
         allowedRadius: 100,
         enforceGeofencing: true,
+        lateCheckInCutoffTime: "10:15",
+        enforceLateCheckInApproval: true,
       };
     }
     return sendSuccess(res, "Company settings retrieved successfully", { settings });
@@ -23,7 +25,15 @@ exports.getSettings = async (req, res) => {
 
 exports.updateSettings = async (req, res) => {
   try {
-    const { companyName, latitude, longitude, allowedRadius, enforceGeofencing } = req.body;
+    const {
+      companyName,
+      latitude,
+      longitude,
+      allowedRadius,
+      enforceGeofencing,
+      lateCheckInCutoffTime,
+      enforceLateCheckInApproval,
+    } = req.body;
 
     if (
       !companyName ||
@@ -41,6 +51,12 @@ exports.updateSettings = async (req, res) => {
       settings.longitude = Number(longitude);
       settings.allowedRadius = Number(allowedRadius);
       settings.enforceGeofencing = !!enforceGeofencing;
+      if (lateCheckInCutoffTime !== undefined) {
+        settings.lateCheckInCutoffTime = lateCheckInCutoffTime;
+      }
+      if (enforceLateCheckInApproval !== undefined) {
+        settings.enforceLateCheckInApproval = !!enforceLateCheckInApproval;
+      }
       await settings.save();
     } else {
       settings = new CompanySetting({
@@ -49,6 +65,9 @@ exports.updateSettings = async (req, res) => {
         longitude: Number(longitude),
         allowedRadius: Number(allowedRadius),
         enforceGeofencing: !!enforceGeofencing,
+        lateCheckInCutoffTime: lateCheckInCutoffTime || "10:15",
+        enforceLateCheckInApproval:
+          enforceLateCheckInApproval !== undefined ? !!enforceLateCheckInApproval : true,
       });
       await settings.save();
     }

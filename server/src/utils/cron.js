@@ -134,6 +134,37 @@ const initCronJobs = () => {
       console.error("Cron: Error checking overdue tasks:", err);
     }
   });
+
+  // Run daily at 02:00 AM to clean up check-in selfies older than 30 days (zero-cost storage optimization)
+  cron.schedule("0 2 * * *", () => {
+    try {
+      const fs = require("fs");
+      const path = require("path");
+      const uploadDir = path.join(__dirname, "../../uploads/selfies");
+      if (fs.existsSync(uploadDir)) {
+        const files = fs.readdirSync(uploadDir);
+        const now = Date.now();
+        const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+        let deletedCount = 0;
+
+        for (const file of files) {
+          const filePath = path.join(uploadDir, file);
+          const stats = fs.statSync(filePath);
+          if (now - stats.mtimeMs > thirtyDaysMs) {
+            fs.unlinkSync(filePath);
+            deletedCount++;
+          }
+        }
+        if (deletedCount > 0) {
+          console.log(
+            `Cron: Auto-deleted ${deletedCount} selfie photos older than 30 days to free disk space.`,
+          );
+        }
+      }
+    } catch (err) {
+      console.error("Cron: Error cleaning up old selfies:", err);
+    }
+  });
 };
 
 module.exports = initCronJobs;

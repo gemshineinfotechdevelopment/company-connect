@@ -7,7 +7,7 @@ import { BirthdayPopup } from "@/components/birthday-popup";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, CheckCircle2, LogOut, Loader2 } from "lucide-react";
+import { Clock, CheckCircle2, LogOut, Loader2, AlertTriangle } from "lucide-react";
 import { getUpcomingBirthdays, isBirthdayToday } from "@/lib/birthday";
 import {
   checkIn,
@@ -15,6 +15,8 @@ import {
   fetchTodayAttendance,
   fetchCompanySettings,
 } from "@/lib/attendanceService";
+import { LateCheckInModal } from "@/components/LateCheckInModal";
+import { SelfieCaptureModal } from "@/components/SelfieCaptureModal";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/dashboard")({
@@ -78,6 +80,9 @@ function EmployeeDashboard() {
   const [isInsideRadius, setIsInsideRadius] = useState<boolean | null>(null);
   const [checkingIn, setCheckingIn] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
+  const [lateModalOpen, setLateModalOpen] = useState(false);
+  const [selfieModalOpen, setSelfieModalOpen] = useState(false);
+  const [tempSelfie, setTempSelfie] = useState<string | null>(null);
 
   const today = useMemo(() => new Date(), []);
   const todayKey = `gemshine.birthday-popup-seen.${currentUser?.id ?? ""}`;
@@ -180,6 +185,8 @@ function EmployeeDashboard() {
 
   const hasCheckedIn = !!todayRecord?.checkInTime;
   const hasCheckedOut = !!todayRecord?.checkOutTime;
+  const isPendingApproval = todayRecord?.lateStatus === "PENDING_APPROVAL";
+  const isLateRejected = todayRecord?.lateStatus === "REJECTED";
 
   const status = todayRecord
     ? hasCheckedOut
@@ -188,15 +195,49 @@ function EmployeeDashboard() {
         ? todayRecord.status === "WFH"
           ? "WFH Active"
           : "Checked in"
-        : "Not marked"
+        : isPendingApproval
+          ? "Approval Pending"
+          : isLateRejected
+            ? "Check-In Rejected"
+            : "Not marked"
     : "Not marked";
 
-  const handleCheckIn = async () => {
+  const isPastCutoff = () => {
+    const d = new Date();
+    const timeStr = d.toLocaleTimeString("en-GB", {
+      timeZone: "Asia/Kolkata",
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const [h, m] = timeStr.split(":").map(Number);
+    return h > 10 || (h === 10 && m >= 15);
+  };
+
+  const handleCheckInClick = () => {
     if (companySettings && companySettings.enforceGeofencing && isInsideRadius === false) {
       toast.error("You are outside the company location. Check-In not allowed.");
       return;
     }
 
+    // Always require live selfie verification to prevent proxy attendance
+    setSelfieModalOpen(true);
+  };
+
+  const handleSelfieCaptured = (selfieBase64: string) => {
+    setTempSelfie(selfieBase64);
+    if (currentUser.role !== "admin" && isPastCutoff()) {
+      setLateModalOpen(true);
+    } else {
+      executeCheckIn(undefined, selfieBase64);
+    }
+  };
+
+  const handleLateModalConfirm = async (lateReason: string) => {
+    await executeCheckIn(lateReason, tempSelfie || undefined);
+  };
+
+  const executeCheckIn = async (lateReason?: string, selfie?: string) => {
     setCheckingIn(true);
     try {
       const metadata = getClientMetadata();
@@ -205,10 +246,18 @@ function EmployeeDashboard() {
         longitude: employeeCoords?.longitude ?? 0,
         accuracy: employeeCoords?.accuracy ?? 0,
         ...metadata,
+        ...(lateReason ? { lateReason } : {}),
+        ...(selfie ? { selfie } : {}),
       };
 
-      await checkIn(payload);
-      toast.success("Checked in successfully!");
+      const res = await checkIn(payload);
+      if (res?.data?.requiresApproval || res?.requiresApproval) {
+        toast.info("Late check-in request with verified selfie submitted to Admin.");
+      } else {
+        toast.success("Checked in successfully with photo verification!");
+      }
+      setLateModalOpen(false);
+      setTempSelfie(null);
       await fetchToday();
     } catch (e: any) {
       toast.error(e.response?.data?.message || e.message || "Failed to check in");
@@ -276,6 +325,44 @@ function EmployeeDashboard() {
             <CardTitle className="text-base">Today's attendance</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {isPendingApproval && (
+              <div className="rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 p-3.5 flex items-start gap-3 text-xs text-amber-900 dark:text-amber-200">
+                <Clock className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-semibold text-sm text-amber-900 dark:text-amber-100">
+                    Check-In Pending Admin Approval
+                  </p>
+                  <p className="mt-0.5 leading-relaxed opacity-90">
+                    Your check-in was requested after 10:15 AM (at{" "}
+                    {todayRecord?.requestedCheckInTime
+                      ? formatTime(todayRecord.requestedCheckInTime)
+                      : "cut-off time"}
+                    ). It has been sent to the Admin for approval.
+                  </p>
+                  {todayRecord?.lateReason && (
+                    <p className="mt-1.5 font-medium text-[11px] text-amber-700 dark:text-amber-300">
+                      Reason: "{todayRecord.lateReason}"
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {isLateRejected && (
+              <div className="rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 p-3.5 flex items-start gap-3 text-xs text-red-900 dark:text-red-200">
+                <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-semibold text-sm text-red-900 dark:text-red-100">
+                    Late Check-In Request Rejected
+                  </p>
+                  <p className="mt-0.5 leading-relaxed opacity-90">
+                    Your check-in request was rejected by Admin. Reason:{" "}
+                    {todayRecord?.rejectionReason || "Check-in request was not approved."}
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-row gap-4">
               <div className="flex-1 rounded-lg border border-border p-4">
                 <div className="text-xs text-muted-foreground">Check in</div>
@@ -291,9 +378,21 @@ function EmployeeDashboard() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button onClick={handleCheckIn} disabled={hasCheckedIn || checkingIn}>
+              <Button
+                onClick={handleCheckInClick}
+                disabled={hasCheckedIn || isPendingApproval || checkingIn}
+                className={
+                  isPendingApproval
+                    ? "bg-amber-600 hover:bg-amber-600 text-white cursor-not-allowed opacity-85"
+                    : ""
+                }
+              >
                 {checkingIn && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Check in
+                {hasCheckedIn
+                  ? "Checked in"
+                  : isPendingApproval
+                    ? "Approval Pending..."
+                    : "Check in"}
               </Button>
               <Button
                 variant="outline"
@@ -307,6 +406,20 @@ function EmployeeDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <LateCheckInModal
+        open={lateModalOpen}
+        onOpenChange={setLateModalOpen}
+        onConfirm={handleLateModalConfirm}
+        loading={checkingIn}
+      />
+
+      <SelfieCaptureModal
+        open={selfieModalOpen}
+        onOpenChange={setSelfieModalOpen}
+        onCapture={handleSelfieCaptured}
+        employeeName={currentUser?.name}
+      />
 
       <div className="mt-6">
         <BirthdayPanel title="Upcoming Birthdays" employees={upcomingBirthdays} highlightToday />

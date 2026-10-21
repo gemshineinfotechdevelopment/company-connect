@@ -29,6 +29,7 @@ exports.getPendingApprovals = async (req, res) => {
       status: a.status,
       appliedDate: a.appliedDate || a.createdAt,
       sourceId: a.sourceId || null,
+      selfieUrl: a.selfieUrl || null,
     }));
 
     return sendSuccess(res, "Pending approvals fetched successfully", { records });
@@ -61,6 +62,7 @@ exports.getApprovedRequests = async (req, res) => {
         approvedDate: isApproved ? a.approvedDate || a.updatedAt : a.rejectedAt || a.updatedAt,
         approvedBy: isApproved ? a.approvedBy || null : a.rejectedBy || null,
         sourceId: a.sourceId || null,
+        selfieUrl: a.selfieUrl || null,
       };
     });
     records.sort((a, b) => new Date(b.approvedDate) - new Date(a.approvedDate));
@@ -76,7 +78,7 @@ exports.approveRequest = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Accept either an Approval id or a direct Leave/WFH id.
+    // Accept either an Approval id or a direct Leave/WFH/Attendance id.
     let approval = await Approval.findById(id);
     let request = null;
     let sourceType = null;
@@ -84,7 +86,9 @@ exports.approveRequest = async (req, res) => {
       sourceType = approval.requestType;
       if (approval.sourceId) {
         if (sourceType === "LEAVE") request = await Leave.findById(approval.sourceId);
-        else request = await Wfh.findById(approval.sourceId);
+        else if (sourceType === "WFH") request = await Wfh.findById(approval.sourceId);
+        else if (sourceType === "LATE_CHECKIN")
+          request = await Attendance.findById(approval.sourceId);
       }
     } else {
       // treat id as source id
@@ -94,15 +98,93 @@ exports.approveRequest = async (req, res) => {
         request = await Wfh.findById(id);
         sourceType = "WFH";
       }
+      if (!request) {
+        request = await Attendance.findById(id);
+        sourceType = "LATE_CHECKIN";
+      }
       // try to find approval by source
       if (request) approval = await Approval.findOne({ sourceId: request._id });
+    }
+
+    if (!request && !approval) return sendError(res, "Request not found", 404);
+
+    const approverId = req.user && req.user.id ? req.user.id : null;
+
+    // Handle LATE_CHECKIN approvals
+    if (sourceType === "LATE_CHECKIN") {
+      let attendance = request;
+      if (!attendance && approval && approval.sourceId) {
+        attendance = await Attendance.findById(approval.sourceId);
+      }
+      if (!attendance && approval) {
+        attendance = await Attendance.findOne({
+          employeeId: approval.employeeId,
+          date: formatDateString(approval.fromDate),
+        });
+      }
+
+      if (!attendance) {
+        return sendError(res, "Attendance record for late check-in not found", 404);
+      }
+
+      // Check for approved WFH today
+      const today = new Date();
+      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const endOfToday = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+        23,
+        59,
+        59,
+        999,
+      );
+      const activeWfh = await Wfh.findOne({
+        employeeId: attendance.employeeId,
+        status: "APPROVED",
+        date: { $gte: startOfToday, $lte: endOfToday },
+      });
+
+      attendance.checkInTime = attendance.requestedCheckInTime || new Date();
+      attendance.status = activeWfh ? "WFH" : "PRESENT";
+      attendance.lateStatus = "APPROVED";
+      attendance.approvedBy = approverId;
+      await attendance.save();
+
+      if (approval) {
+        approval.status = "APPROVED";
+        approval.approvedBy = approverId;
+        approval.approvedDate = new Date();
+        await approval.save();
+      }
+
+      // Notify employee
+      const Notification = require("../models/Notification");
+      const notif = new Notification({
+        recipient: attendance.employeeId,
+        message:
+          "Your late check-in request for today has been APPROVED by Admin. You are now checked in.",
+        type: "LATE_CHECKIN_APPROVED",
+        relatedId: approval ? approval._id : attendance._id,
+      });
+      await notif.save();
+
+      const io = req.app.get("io");
+      if (io) {
+        io.emit("attendance_updated", {
+          employeeId: attendance.employeeId,
+          status: "APPROVED",
+        });
+      }
+
+      return sendSuccess(res, "Late check-in approved successfully", {
+        record: approval || attendance,
+      });
     }
 
     if (!request) return sendError(res, "Request not found", 404);
     if (request.status !== "PENDING")
       return sendError(res, "Only pending requests can be approved", 400);
-
-    const approverId = req.user && req.user.id ? req.user.id : null;
 
     request.status = "APPROVED";
     request.approvedBy = approverId;
@@ -185,22 +267,88 @@ exports.rejectRequest = async (req, res) => {
     // Accept Approval id or source id
     let approval = await Approval.findById(id);
     let request = null;
+    let sourceType = null;
     if (approval) {
+      sourceType = approval.requestType;
       if (approval.sourceId) {
-        request = await Leave.findById(approval.sourceId);
-        if (!request) request = await Wfh.findById(approval.sourceId);
+        if (sourceType === "LEAVE") request = await Leave.findById(approval.sourceId);
+        else if (sourceType === "WFH") request = await Wfh.findById(approval.sourceId);
+        else if (sourceType === "LATE_CHECKIN")
+          request = await Attendance.findById(approval.sourceId);
       }
     } else {
       request = await Leave.findById(id);
-      if (!request) request = await Wfh.findById(id);
+      sourceType = "LEAVE";
+      if (!request) {
+        request = await Wfh.findById(id);
+        sourceType = "WFH";
+      }
+      if (!request) {
+        request = await Attendance.findById(id);
+        sourceType = "LATE_CHECKIN";
+      }
       if (request) approval = await Approval.findOne({ sourceId: request._id });
+    }
+
+    if (!request && !approval) return sendError(res, "Request not found", 404);
+
+    const rejectorId = req.user && req.user.id ? req.user.id : null;
+
+    // Handle LATE_CHECKIN rejection
+    if (sourceType === "LATE_CHECKIN") {
+      let attendance = request;
+      if (!attendance && approval && approval.sourceId) {
+        attendance = await Attendance.findById(approval.sourceId);
+      }
+      if (!attendance && approval) {
+        attendance = await Attendance.findOne({
+          employeeId: approval.employeeId,
+          date: formatDateString(approval.fromDate),
+        });
+      }
+
+      if (attendance) {
+        attendance.lateStatus = "REJECTED";
+        attendance.status = "ABSENT";
+        attendance.checkInTime = null;
+        attendance.rejectedBy = rejectorId;
+        attendance.rejectionReason = req.body.reason || "Rejected by admin";
+        await attendance.save();
+      }
+
+      if (approval) {
+        approval.status = "REJECTED";
+        approval.rejectedBy = rejectorId;
+        approval.rejectedAt = new Date();
+        await approval.save();
+      }
+
+      // Notify employee
+      const Notification = require("../models/Notification");
+      const notif = new Notification({
+        recipient: approval ? approval.employeeId : attendance.employeeId,
+        message: "Your late check-in request for today has been REJECTED by Admin.",
+        type: "LATE_CHECKIN_REJECTED",
+        relatedId: approval ? approval._id : undefined,
+      });
+      await notif.save();
+
+      const io = req.app.get("io");
+      if (io) {
+        io.emit("attendance_updated", {
+          employeeId: approval ? approval.employeeId : attendance.employeeId,
+          status: "REJECTED",
+        });
+      }
+
+      return sendSuccess(res, "Late check-in rejected successfully", {
+        record: approval || attendance,
+      });
     }
 
     if (!request) return sendError(res, "Request not found", 404);
     if (request.status !== "PENDING")
       return sendError(res, "Only pending requests can be rejected", 400);
-
-    const rejectorId = req.user && req.user.id ? req.user.id : null;
 
     request.status = "REJECTED";
     request.rejectedBy = rejectorId;

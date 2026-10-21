@@ -22,6 +22,8 @@ export const checkIn = async (locationData?: {
   accuracy: number;
   deviceInfo?: string;
   browserDetails?: string;
+  lateReason?: string;
+  selfie?: string;
 }) => {
   const response = await axios.post(
     `${API_BASE}/api/attendance/checkin`,

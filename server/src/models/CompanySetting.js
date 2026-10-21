@@ -7,6 +7,8 @@ const companySettingSchema = new mongoose.Schema(
     longitude: { type: Number, required: true },
     allowedRadius: { type: Number, required: true, default: 100 }, // in meters
     enforceGeofencing: { type: Boolean, required: true, default: true },
+    lateCheckInCutoffTime: { type: String, required: true, default: "10:15" }, // HH:mm in IST
+    enforceLateCheckInApproval: { type: Boolean, required: true, default: true },
   },
   { timestamps: true },
 );

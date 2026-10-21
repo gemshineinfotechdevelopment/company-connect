@@ -18,6 +18,8 @@ import {
   Trash2,
   AlertTriangle,
   ClipboardList,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 import { useState, useEffect, type ReactNode } from "react";
 import { usePWAInstall } from "@/hooks/use-pwa-install";
@@ -407,6 +409,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               </div>
             ) : (
               state.notifications.map((n) => {
+                const isLateRequest = n.type === "LATE_CHECKIN_REQUEST";
+                const isLateApproved = n.type === "LATE_CHECKIN_APPROVED";
+                const isLateRejected = n.type === "LATE_CHECKIN_REJECTED";
                 const isOverdue = n.type === "TASK_OVERDUE";
                 return (
                   <div
@@ -416,12 +421,24 @@ export function AppShell({ children }: { children: ReactNode }) {
                     }`}
                   >
                     <div className="mt-0.5">
-                      {isOverdue ? (
-                        <div className="h-6 w-6 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                      {isLateRequest ? (
+                        <div className="h-6 w-6 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 dark:bg-amber-950 dark:text-amber-400">
+                          <Clock className="h-3.5 w-3.5" />
+                        </div>
+                      ) : isLateApproved ? (
+                        <div className="h-6 w-6 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
+                          <CheckCircle className="h-3.5 w-3.5" />
+                        </div>
+                      ) : isLateRejected ? (
+                        <div className="h-6 w-6 rounded-full bg-red-100 flex items-center justify-center text-red-600 dark:bg-red-950 dark:text-red-400">
+                          <XCircle className="h-3.5 w-3.5" />
+                        </div>
+                      ) : isOverdue ? (
+                        <div className="h-6 w-6 rounded-full bg-red-100 flex items-center justify-center text-red-600 dark:bg-red-950 dark:text-red-400">
                           <AlertTriangle className="h-3.5 w-3.5" />
                         </div>
                       ) : (
-                        <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                        <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 dark:bg-blue-950 dark:text-blue-400">
                           <ClipboardList className="h-3.5 w-3.5" />
                         </div>
                       )}
@@ -432,6 +449,15 @@ export function AppShell({ children }: { children: ReactNode }) {
                       >
                         {n.message}
                       </p>
+                      {isLateRequest && currentUser?.role === "admin" && (
+                        <Link
+                          to="/app/admin/approvals"
+                          onClick={() => setNotificationsOpen(false)}
+                          className="inline-block mt-1 text-xs font-semibold text-primary hover:underline"
+                        >
+                          Review in Approvals &rarr;
+                        </Link>
+                      )}
                       <span className="text-[10px] text-muted-foreground block mt-1">
                         {new Date(n.createdAt).toLocaleDateString()} at{" "}
                         {new Date(n.createdAt).toLocaleTimeString([], {

@@ -23,6 +23,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
   fetchAdminDateAttendance,
   fetchAdminMonthlyAttendance,
   fetchAdminAllAttendance,
@@ -46,11 +53,19 @@ import {
   Laptop,
   Network,
   Globe,
+  Camera,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/admin/attendance")({
   component: AdminAttendance,
 });
+
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL !== undefined
+    ? import.meta.env.VITE_API_BASE_URL
+    : import.meta.env.DEV
+      ? "http://localhost:5009"
+      : "";
 
 function fmt(iso?: string) {
   if (!iso) return "—";
@@ -78,6 +93,7 @@ function AdminAttendance() {
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
+  const [selectedSelfieRecord, setSelectedSelfieRecord] = useState<any | null>(null);
   const itemsPerPage = 20;
 
   // Summaries
@@ -299,6 +315,7 @@ function AdminAttendance() {
                     <TableHead>Designation</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Check In</TableHead>
+                    <TableHead>Photo</TableHead>
                     <TableHead>Check Out</TableHead>
                     <TableHead>Total Hrs</TableHead>
                     <TableHead className="text-right">Status</TableHead>
@@ -307,7 +324,7 @@ function AdminAttendance() {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-10">
+                      <TableCell colSpan={8} className="text-center py-10">
                         <div className="flex justify-center">
                           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                         </div>
@@ -315,7 +332,7 @@ function AdminAttendance() {
                     </TableRow>
                   ) : paginatedRecords.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
+                      <TableCell colSpan={8} className="text-center text-muted-foreground py-10">
                         No attendance records found.
                       </TableCell>
                     </TableRow>
@@ -330,6 +347,27 @@ function AdminAttendance() {
                         </TableCell>
                         <TableCell>{r.date}</TableCell>
                         <TableCell>{fmt(r.checkInTime)}</TableCell>
+                        <TableCell>
+                          {r.checkInSelfieUrl ? (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedSelfieRecord(r)}
+                              className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-border bg-card hover:bg-accent text-xs font-medium text-foreground transition-all shadow-xs cursor-pointer group"
+                              title="Click to view verified check-in selfie"
+                            >
+                              <img
+                                src={`${API_BASE}${r.checkInSelfieUrl}`}
+                                alt="Selfie"
+                                className="w-5 h-5 rounded-full object-cover border border-border group-hover:scale-105 transition-transform"
+                              />
+                              <span className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">
+                                Selfie
+                              </span>
+                            </button>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
                         <TableCell>{fmt(r.checkOutTime)}</TableCell>
                         <TableCell>{formatWorkingHours(r.totalHours)}</TableCell>
                         <TableCell className="text-right">
@@ -502,6 +540,74 @@ function AdminAttendance() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Verified Attendance Selfie Modal */}
+      <Dialog
+        open={!!selectedSelfieRecord}
+        onOpenChange={(open) => !open && setSelectedSelfieRecord(null)}
+      >
+        <DialogContent className="sm:max-w-md p-6">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+                <Camera className="h-5 w-5" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-bold">
+                  {selectedSelfieRecord?.employeeId?.name || "Employee"} — Verification Selfie
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                  Live camera photo captured at check-in
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          {selectedSelfieRecord?.checkInSelfieUrl && (
+            <div className="space-y-4 pt-2">
+              <div className="aspect-square w-full max-w-[320px] mx-auto rounded-2xl overflow-hidden bg-black border-2 border-border shadow-md">
+                <img
+                  src={`${API_BASE}${selectedSelfieRecord.checkInSelfieUrl}`}
+                  alt="Check-in Selfie"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="rounded-xl border bg-muted/40 p-3.5 space-y-1.5 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Employee:</span>
+                  <span className="font-semibold">{selectedSelfieRecord?.employeeId?.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Date:</span>
+                  <span className="font-medium">{selectedSelfieRecord?.date}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Check-in Time:</span>
+                  <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                    {fmt(selectedSelfieRecord?.checkInTime)}
+                  </span>
+                </div>
+                {selectedSelfieRecord?.checkInDistance !== undefined && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Office Distance:</span>
+                    <span className="font-medium">
+                      {selectedSelfieRecord.checkInDistance}m from office
+                    </span>
+                  </div>
+                )}
+                {selectedSelfieRecord?.checkInIpAddress && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">IP Address:</span>
+                    <span className="font-mono text-[11px]">
+                      {selectedSelfieRecord.checkInIpAddress}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

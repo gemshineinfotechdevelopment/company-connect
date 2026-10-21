@@ -14,7 +14,19 @@ import {
   fetchMonthlySummaries,
   fetchCompanySettings,
 } from "@/lib/attendanceService";
-import { MapPin, Navigation, Compass, Shield, Laptop, Network, Globe } from "lucide-react";
+import {
+  MapPin,
+  Navigation,
+  Compass,
+  Shield,
+  Laptop,
+  Network,
+  Globe,
+  Clock,
+  AlertTriangle,
+} from "lucide-react";
+import { LateCheckInModal } from "@/components/LateCheckInModal";
+import { SelfieCaptureModal } from "@/components/SelfieCaptureModal";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -107,6 +119,10 @@ function AttendancePage() {
   const [gpsError, setGpsError] = useState<string>("");
   const [distanceFromOffice, setDistanceFromOffice] = useState<number | null>(null);
   const [isInsideRadius, setIsInsideRadius] = useState<boolean | null>(null);
+  const [lateModalOpen, setLateModalOpen] = useState(false);
+  const [selfieModalOpen, setSelfieModalOpen] = useState(false);
+  const [tempSelfie, setTempSelfie] = useState<string | null>(null);
+  const [checkingIn, setCheckingIn] = useState(false);
 
   // Tabs & Views
   const [tab, setTab] = useState("list");
@@ -210,12 +226,43 @@ function AttendancePage() {
     }
   }, [employeeCoords, companySettings]);
 
-  const handleCheckIn = async () => {
+  const isPastCutoff = () => {
+    const d = new Date();
+    const timeStr = d.toLocaleTimeString("en-GB", {
+      timeZone: "Asia/Kolkata",
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const [h, m] = timeStr.split(":").map(Number);
+    return h > 10 || (h === 10 && m >= 15);
+  };
+
+  const handleCheckInClick = () => {
     if (companySettings && companySettings.enforceGeofencing && isInsideRadius === false) {
       toast.error("You are outside the company location. Check-In not allowed.");
       return;
     }
 
+    // Always require live selfie verification to prevent proxy attendance
+    setSelfieModalOpen(true);
+  };
+
+  const handleSelfieCaptured = (selfieBase64: string) => {
+    setTempSelfie(selfieBase64);
+    if (currentUser?.role !== "admin" && isPastCutoff()) {
+      setLateModalOpen(true);
+    } else {
+      executeCheckIn(undefined, selfieBase64);
+    }
+  };
+
+  const handleLateModalConfirm = async (lateReason: string) => {
+    await executeCheckIn(lateReason, tempSelfie || undefined);
+  };
+
+  const executeCheckIn = async (lateReason?: string, selfie?: string) => {
+    setCheckingIn(true);
     try {
       const metadata = getClientMetadata();
       const payload = {
@@ -223,14 +270,24 @@ function AttendancePage() {
         longitude: employeeCoords?.longitude ?? 0,
         accuracy: employeeCoords?.accuracy ?? 0,
         ...metadata,
+        ...(lateReason ? { lateReason } : {}),
+        ...(selfie ? { selfie } : {}),
       };
 
-      await checkIn(payload);
-      toast.success("Checked in successfully!");
+      const res = await checkIn(payload);
+      if (res?.data?.requiresApproval || res?.requiresApproval) {
+        toast.info("Late check-in request with verified selfie submitted to Admin.");
+      } else {
+        toast.success("Checked in successfully with photo verification!");
+      }
+      setLateModalOpen(false);
+      setTempSelfie(null);
       fetchToday();
       if (tab === "list") loadRecords();
     } catch (e: any) {
       toast.error(e.response?.data?.message || e.message || "Failed to check in");
+    } finally {
+      setCheckingIn(false);
     }
   };
 
@@ -255,6 +312,8 @@ function AttendancePage() {
 
   const hasCheckedIn = !!todayRecord?.checkInTime;
   const hasCheckedOut = !!todayRecord?.checkOutTime;
+  const isPendingApproval = todayRecord?.lateStatus === "PENDING_APPROVAL";
+  const isLateRejected = todayRecord?.lateStatus === "REJECTED";
 
   // List View Loading
   const loadRecords = async () => {
@@ -356,18 +415,38 @@ function AttendancePage() {
                   <p className="text-sm font-medium text-muted-foreground">Today's Status</p>
                   <div className="flex items-center gap-2">
                     <span className="text-2xl font-bold">
-                      {todayRecord?.status || "NOT MARKED"}
+                      {isPendingApproval
+                        ? "PENDING"
+                        : isLateRejected
+                          ? "REJECTED"
+                          : todayRecord?.status || "NOT MARKED"}
                     </span>
-                    {todayRecord?.status && (
+                    {isPendingApproval ? (
+                      <span className="w-3 h-3 rounded-full bg-amber-500 animate-pulse" />
+                    ) : isLateRejected ? (
+                      <span className="w-3 h-3 rounded-full bg-red-500" />
+                    ) : todayRecord?.status ? (
                       <span
-                        className={`w-3 h-3 rounded-full ${todayRecord.status === "PRESENT" ? "bg-green-500" : todayRecord.status === "WFH" ? "bg-blue-500" : "bg-red-500"}`}
+                        className={`w-3 h-3 rounded-full ${
+                          todayRecord.status === "PRESENT"
+                            ? "bg-green-500"
+                            : todayRecord.status === "WFH"
+                              ? "bg-blue-500"
+                              : "bg-red-500"
+                        }`}
                       />
-                    )}
+                    ) : null}
                   </div>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Check In</p>
-                  <p className="text-xl font-bold">{fmt(todayRecord?.checkInTime)}</p>
+                  <p className="text-xl font-bold">
+                    {hasCheckedIn
+                      ? fmt(todayRecord?.checkInTime)
+                      : isPendingApproval
+                        ? `${fmt(todayRecord?.requestedCheckInTime)} (Pending)`
+                        : "—"}
+                  </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Check Out</p>
@@ -379,6 +458,40 @@ function AttendancePage() {
                 </div>
               </div>
             </div>
+
+            {isPendingApproval && (
+              <div className="mt-4 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 p-3.5 flex items-start gap-3 text-xs text-amber-900 dark:text-amber-200">
+                <Clock className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-semibold text-sm text-amber-900 dark:text-amber-100">
+                    Late Check-In Request Awaiting Admin Approval
+                  </p>
+                  <p className="mt-0.5 leading-relaxed opacity-90">
+                    You submitted a late check-in request after the 10:15 AM cut-off time. An approval request has been sent to the Admin.
+                  </p>
+                  {todayRecord?.lateReason && (
+                    <p className="mt-1 font-medium text-amber-700 dark:text-amber-300">
+                      Reason: "{todayRecord.lateReason}"
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {isLateRejected && (
+              <div className="mt-4 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 p-3.5 flex items-start gap-3 text-xs text-red-900 dark:text-red-200">
+                <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-semibold text-sm text-red-900 dark:text-red-100">
+                    Late Check-In Request Rejected
+                  </p>
+                  <p className="mt-0.5 leading-relaxed opacity-90">
+                    Your check-in request was rejected by Admin. Reason:{" "}
+                    {todayRecord?.rejectionReason || "Check-in request was not approved."}
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between mt-6 pt-6 border-t border-indigo-100/50">
               <div className="text-xs text-muted-foreground leading-relaxed">
@@ -392,16 +505,26 @@ function AttendancePage() {
               </div>
               <div className="flex gap-4 w-full sm:w-auto shrink-0">
                 <Button
-                  onClick={handleCheckIn}
+                  onClick={handleCheckInClick}
                   disabled={
                     hasCheckedIn ||
+                    isPendingApproval ||
                     (companySettings?.enforceGeofencing && isInsideRadius === false) ||
-                    gpsStatus === "acquiring"
+                    gpsStatus === "acquiring" ||
+                    checkingIn
                   }
-                  className="flex-grow sm:flex-none w-32 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm"
+                  className={`flex-grow sm:flex-none min-w-32 font-semibold shadow-sm text-white ${
+                    isPendingApproval
+                      ? "bg-amber-600 hover:bg-amber-600 cursor-not-allowed opacity-85"
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }`}
                   size="lg"
                 >
-                  Check In
+                  {hasCheckedIn
+                    ? "Checked In"
+                    : isPendingApproval
+                      ? "Approval Pending..."
+                      : "Check In"}
                 </Button>
                 <Button
                   variant="outline"
@@ -787,6 +910,20 @@ function AttendancePage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <LateCheckInModal
+        open={lateModalOpen}
+        onOpenChange={setLateModalOpen}
+        onConfirm={handleLateModalConfirm}
+        loading={checkingIn}
+      />
+
+      <SelfieCaptureModal
+        open={selfieModalOpen}
+        onOpenChange={setSelfieModalOpen}
+        onCapture={handleSelfieCaptured}
+        employeeName={currentUser?.name}
+      />
     </div>
   );
 }

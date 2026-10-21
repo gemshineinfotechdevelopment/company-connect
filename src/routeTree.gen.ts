@@ -9,29 +9,29 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppWfhRouteImport } from './routes/app.wfh'
-import { Route as AppTasksRouteImport } from './routes/app.tasks'
-import { Route as AppProfileRouteImport } from './routes/app.profile'
-import { Route as AppLeaveRouteImport } from './routes/app.leave'
-import { Route as AppHolidaysRouteImport } from './routes/app.holidays'
-import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
-import { Route as AppChatRouteImport } from './routes/app.chat'
-import { Route as AppAttendanceRouteImport } from './routes/app.attendance'
+import { Route as AppRouteImport } from './routes/app'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppAdminRouteImport } from './routes/app.admin'
-import { Route as AppAdminTaskManagementRouteImport } from './routes/app.admin.task-management'
-import { Route as AppAdminSettingsRouteImport } from './routes/app.admin.settings'
-import { Route as AppAdminHolidaysRouteImport } from './routes/app.admin.holidays'
-import { Route as AppAdminEmployeesRouteImport } from './routes/app.admin.employees'
-import { Route as AppAdminAttendanceRouteImport } from './routes/app.admin.attendance'
+import { Route as AppAttendanceRouteImport } from './routes/app.attendance'
+import { Route as AppChatRouteImport } from './routes/app.chat'
+import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
+import { Route as AppHolidaysRouteImport } from './routes/app.holidays'
+import { Route as AppLeaveRouteImport } from './routes/app.leave'
+import { Route as AppProfileRouteImport } from './routes/app.profile'
+import { Route as AppTasksRouteImport } from './routes/app.tasks'
+import { Route as AppWfhRouteImport } from './routes/app.wfh'
 import { Route as AppAdminApprovalsRouteImport } from './routes/app.admin.approvals'
+import { Route as AppAdminAttendanceRouteImport } from './routes/app.admin.attendance'
+import { Route as AppAdminEmployeesRouteImport } from './routes/app.admin.employees'
+import { Route as AppAdminHolidaysRouteImport } from './routes/app.admin.holidays'
+import { Route as AppAdminSettingsRouteImport } from './routes/app.admin.settings'
+import { Route as AppAdminTaskManagementRouteImport } from './routes/app.admin.task-management'
 import { Route as AppAdminEmployeesIdRouteImport } from './routes/app.admin.employees.$id'
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -39,44 +39,14 @@ const AppRoute = AppRouteImport.update({
   path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppWfhRoute = AppWfhRouteImport.update({
-  id: '/wfh',
-  path: '/wfh',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppTasksRoute = AppTasksRouteImport.update({
-  id: '/tasks',
-  path: '/tasks',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppProfileRoute = AppProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLeaveRoute = AppLeaveRouteImport.update({
-  id: '/leave',
-  path: '/leave',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppHolidaysRoute = AppHolidaysRouteImport.update({
-  id: '/holidays',
-  path: '/holidays',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppDashboardRoute = AppDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppChatRoute = AppChatRouteImport.update({
-  id: '/chat',
-  path: '/chat',
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAttendanceRoute = AppAttendanceRouteImport.update({
@@ -84,29 +54,44 @@ const AppAttendanceRoute = AppAttendanceRouteImport.update({
   path: '/attendance',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAdminRoute = AppAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const AppChatRoute = AppChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAdminTaskManagementRoute = AppAdminTaskManagementRouteImport.update({
-  id: '/task-management',
-  path: '/task-management',
-  getParentRoute: () => AppAdminRoute,
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
 } as any)
-const AppAdminSettingsRoute = AppAdminSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AppAdminRoute,
-} as any)
-const AppAdminHolidaysRoute = AppAdminHolidaysRouteImport.update({
+const AppHolidaysRoute = AppHolidaysRouteImport.update({
   id: '/holidays',
   path: '/holidays',
-  getParentRoute: () => AppAdminRoute,
+  getParentRoute: () => AppRoute,
 } as any)
-const AppAdminEmployeesRoute = AppAdminEmployeesRouteImport.update({
-  id: '/employees',
-  path: '/employees',
+const AppLeaveRoute = AppLeaveRouteImport.update({
+  id: '/leave',
+  path: '/leave',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTasksRoute = AppTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWfhRoute = AppWfhRouteImport.update({
+  id: '/wfh',
+  path: '/wfh',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminApprovalsRoute = AppAdminApprovalsRouteImport.update({
+  id: '/approvals',
+  path: '/approvals',
   getParentRoute: () => AppAdminRoute,
 } as any)
 const AppAdminAttendanceRoute = AppAdminAttendanceRouteImport.update({
@@ -114,9 +99,24 @@ const AppAdminAttendanceRoute = AppAdminAttendanceRouteImport.update({
   path: '/attendance',
   getParentRoute: () => AppAdminRoute,
 } as any)
-const AppAdminApprovalsRoute = AppAdminApprovalsRouteImport.update({
-  id: '/approvals',
-  path: '/approvals',
+const AppAdminEmployeesRoute = AppAdminEmployeesRouteImport.update({
+  id: '/employees',
+  path: '/employees',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminHolidaysRoute = AppAdminHolidaysRouteImport.update({
+  id: '/holidays',
+  path: '/holidays',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminSettingsRoute = AppAdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminTaskManagementRoute = AppAdminTaskManagementRouteImport.update({
+  id: '/task-management',
+  path: '/task-management',
   getParentRoute: () => AppAdminRoute,
 } as any)
 const AppAdminEmployeesIdRoute = AppAdminEmployeesIdRouteImport.update({
@@ -263,11 +263,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app': {
@@ -277,60 +277,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app/wfh': {
-      id: '/app/wfh'
-      path: '/wfh'
-      fullPath: '/app/wfh'
-      preLoaderRoute: typeof AppWfhRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/tasks': {
-      id: '/app/tasks'
-      path: '/tasks'
-      fullPath: '/app/tasks'
-      preLoaderRoute: typeof AppTasksRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/profile': {
-      id: '/app/profile'
-      path: '/profile'
-      fullPath: '/app/profile'
-      preLoaderRoute: typeof AppProfileRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/leave': {
-      id: '/app/leave'
-      path: '/leave'
-      fullPath: '/app/leave'
-      preLoaderRoute: typeof AppLeaveRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/holidays': {
-      id: '/app/holidays'
-      path: '/holidays'
-      fullPath: '/app/holidays'
-      preLoaderRoute: typeof AppHolidaysRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/dashboard': {
-      id: '/app/dashboard'
-      path: '/dashboard'
-      fullPath: '/app/dashboard'
-      preLoaderRoute: typeof AppDashboardRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/chat': {
-      id: '/app/chat'
-      path: '/chat'
-      fullPath: '/app/chat'
-      preLoaderRoute: typeof AppChatRouteImport
+    '/app/admin': {
+      id: '/app/admin'
+      path: '/admin'
+      fullPath: '/app/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/attendance': {
@@ -340,39 +298,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAttendanceRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/admin': {
-      id: '/app/admin'
-      path: '/admin'
-      fullPath: '/app/admin'
-      preLoaderRoute: typeof AppAdminRouteImport
+    '/app/chat': {
+      id: '/app/chat'
+      path: '/chat'
+      fullPath: '/app/chat'
+      preLoaderRoute: typeof AppChatRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/admin/task-management': {
-      id: '/app/admin/task-management'
-      path: '/task-management'
-      fullPath: '/app/admin/task-management'
-      preLoaderRoute: typeof AppAdminTaskManagementRouteImport
-      parentRoute: typeof AppAdminRoute
+    '/app/dashboard': {
+      id: '/app/dashboard'
+      path: '/dashboard'
+      fullPath: '/app/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/app/admin/settings': {
-      id: '/app/admin/settings'
-      path: '/settings'
-      fullPath: '/app/admin/settings'
-      preLoaderRoute: typeof AppAdminSettingsRouteImport
-      parentRoute: typeof AppAdminRoute
-    }
-    '/app/admin/holidays': {
-      id: '/app/admin/holidays'
+    '/app/holidays': {
+      id: '/app/holidays'
       path: '/holidays'
-      fullPath: '/app/admin/holidays'
-      preLoaderRoute: typeof AppAdminHolidaysRouteImport
-      parentRoute: typeof AppAdminRoute
+      fullPath: '/app/holidays'
+      preLoaderRoute: typeof AppHolidaysRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/app/admin/employees': {
-      id: '/app/admin/employees'
-      path: '/employees'
-      fullPath: '/app/admin/employees'
-      preLoaderRoute: typeof AppAdminEmployeesRouteImport
+    '/app/leave': {
+      id: '/app/leave'
+      path: '/leave'
+      fullPath: '/app/leave'
+      preLoaderRoute: typeof AppLeaveRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/profile': {
+      id: '/app/profile'
+      path: '/profile'
+      fullPath: '/app/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/tasks': {
+      id: '/app/tasks'
+      path: '/tasks'
+      fullPath: '/app/tasks'
+      preLoaderRoute: typeof AppTasksRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/wfh': {
+      id: '/app/wfh'
+      path: '/wfh'
+      fullPath: '/app/wfh'
+      preLoaderRoute: typeof AppWfhRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/admin/approvals': {
+      id: '/app/admin/approvals'
+      path: '/approvals'
+      fullPath: '/app/admin/approvals'
+      preLoaderRoute: typeof AppAdminApprovalsRouteImport
       parentRoute: typeof AppAdminRoute
     }
     '/app/admin/attendance': {
@@ -382,11 +361,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminAttendanceRouteImport
       parentRoute: typeof AppAdminRoute
     }
-    '/app/admin/approvals': {
-      id: '/app/admin/approvals'
-      path: '/approvals'
-      fullPath: '/app/admin/approvals'
-      preLoaderRoute: typeof AppAdminApprovalsRouteImport
+    '/app/admin/employees': {
+      id: '/app/admin/employees'
+      path: '/employees'
+      fullPath: '/app/admin/employees'
+      preLoaderRoute: typeof AppAdminEmployeesRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/app/admin/holidays': {
+      id: '/app/admin/holidays'
+      path: '/holidays'
+      fullPath: '/app/admin/holidays'
+      preLoaderRoute: typeof AppAdminHolidaysRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/app/admin/settings': {
+      id: '/app/admin/settings'
+      path: '/settings'
+      fullPath: '/app/admin/settings'
+      preLoaderRoute: typeof AppAdminSettingsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/app/admin/task-management': {
+      id: '/app/admin/task-management'
+      path: '/task-management'
+      fullPath: '/app/admin/task-management'
+      preLoaderRoute: typeof AppAdminTaskManagementRouteImport
       parentRoute: typeof AppAdminRoute
     }
     '/app/admin/employees/$id': {

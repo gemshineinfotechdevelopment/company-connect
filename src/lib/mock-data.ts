@@ -101,7 +101,13 @@ export interface NotificationItem {
   id: string;
   recipient: string;
   message: string;
-  type: "TASK_ASSIGNED" | "TASK_OVERDUE" | "TASK_COMPLETED";
+  type:
+    | "TASK_ASSIGNED"
+    | "TASK_OVERDUE"
+    | "TASK_COMPLETED"
+    | "LATE_CHECKIN_REQUEST"
+    | "LATE_CHECKIN_APPROVED"
+    | "LATE_CHECKIN_REJECTED";
   isRead: boolean;
   relatedId?: string;
   createdAt: string;

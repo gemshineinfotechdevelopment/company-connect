@@ -13,7 +13,14 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["TASK_ASSIGNED", "TASK_OVERDUE", "TASK_COMPLETED"],
+      enum: [
+        "TASK_ASSIGNED",
+        "TASK_OVERDUE",
+        "TASK_COMPLETED",
+        "LATE_CHECKIN_REQUEST",
+        "LATE_CHECKIN_APPROVED",
+        "LATE_CHECKIN_REJECTED",
+      ],
       required: true,
     },
     isRead: {
@@ -22,7 +29,6 @@ const notificationSchema = new mongoose.Schema(
     },
     relatedId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Task",
     },
   },
   { timestamps: true },
