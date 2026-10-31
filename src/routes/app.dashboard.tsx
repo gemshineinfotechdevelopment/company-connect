@@ -16,7 +16,6 @@ import {
   fetchCompanySettings,
 } from "@/lib/attendanceService";
 import { LateCheckInModal } from "@/components/LateCheckInModal";
-import { SelfieCaptureModal } from "@/components/SelfieCaptureModal";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/dashboard")({
@@ -81,8 +80,6 @@ function EmployeeDashboard() {
   const [checkingIn, setCheckingIn] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
   const [lateModalOpen, setLateModalOpen] = useState(false);
-  const [selfieModalOpen, setSelfieModalOpen] = useState(false);
-  const [tempSelfie, setTempSelfie] = useState<string | null>(null);
 
   const today = useMemo(() => new Date(), []);
   const todayKey = `gemshine.birthday-popup-seen.${currentUser?.id ?? ""}`;
@@ -203,6 +200,8 @@ function EmployeeDashboard() {
     : "Not marked";
 
   const isPastCutoff = () => {
+    const cutoff = companySettings?.lateCheckInCutoffTime || "10:15";
+    const [cutoffHours, cutoffMins] = cutoff.split(":").map(Number);
     const d = new Date();
     const timeStr = d.toLocaleTimeString("en-GB", {
       timeZone: "Asia/Kolkata",
@@ -211,7 +210,7 @@ function EmployeeDashboard() {
       minute: "2-digit",
     });
     const [h, m] = timeStr.split(":").map(Number);
-    return h > 10 || (h === 10 && m >= 15);
+    return h > cutoffHours || (h === cutoffHours && m >= cutoffMins);
   };
 
   const handleCheckInClick = () => {
@@ -220,24 +219,18 @@ function EmployeeDashboard() {
       return;
     }
 
-    // Always require live selfie verification to prevent proxy attendance
-    setSelfieModalOpen(true);
-  };
-
-  const handleSelfieCaptured = (selfieBase64: string) => {
-    setTempSelfie(selfieBase64);
-    if (currentUser.role !== "admin" && isPastCutoff()) {
+    if (currentUser?.role?.toLowerCase() !== "admin" && isPastCutoff()) {
       setLateModalOpen(true);
     } else {
-      executeCheckIn(undefined, selfieBase64);
+      executeCheckIn();
     }
   };
 
   const handleLateModalConfirm = async (lateReason: string) => {
-    await executeCheckIn(lateReason, tempSelfie || undefined);
+    await executeCheckIn(lateReason);
   };
 
-  const executeCheckIn = async (lateReason?: string, selfie?: string) => {
+  const executeCheckIn = async (lateReason?: string) => {
     setCheckingIn(true);
     try {
       const metadata = getClientMetadata();
@@ -247,17 +240,15 @@ function EmployeeDashboard() {
         accuracy: employeeCoords?.accuracy ?? 0,
         ...metadata,
         ...(lateReason ? { lateReason } : {}),
-        ...(selfie ? { selfie } : {}),
       };
 
       const res = await checkIn(payload);
       if (res?.data?.requiresApproval || res?.requiresApproval) {
-        toast.info("Late check-in request with verified selfie submitted to Admin.");
+        toast.info("Late check-in request submitted to Admin.");
       } else {
-        toast.success("Checked in successfully with photo verification!");
+        toast.success("Checked in successfully!");
       }
       setLateModalOpen(false);
-      setTempSelfie(null);
       await fetchToday();
     } catch (e: any) {
       toast.error(e.response?.data?.message || e.message || "Failed to check in");
@@ -412,13 +403,6 @@ function EmployeeDashboard() {
         onOpenChange={setLateModalOpen}
         onConfirm={handleLateModalConfirm}
         loading={checkingIn}
-      />
-
-      <SelfieCaptureModal
-        open={selfieModalOpen}
-        onOpenChange={setSelfieModalOpen}
-        onCapture={handleSelfieCaptured}
-        employeeName={currentUser?.name}
       />
 
       <div className="mt-6">

@@ -14,9 +14,10 @@ const formatDateString = (d) => {
 
 exports.getPendingApprovals = async (req, res) => {
   try {
-    // Fetch pending approvals from approvals collection
+    // Fetch pending approvals from approvals collection (newest first)
     const approvals = await Approval.find({ status: "PENDING" })
       .populate("employeeId", "name designation")
+      .sort({ createdAt: -1, appliedDate: -1 })
       .lean();
 
     const records = approvals.map((a) => ({
@@ -30,7 +31,14 @@ exports.getPendingApprovals = async (req, res) => {
       appliedDate: a.appliedDate || a.createdAt,
       sourceId: a.sourceId || null,
       selfieUrl: a.selfieUrl || null,
+      createdAt: a.createdAt,
     }));
+
+    records.sort((a, b) => {
+      const timeA = new Date(a.appliedDate || a.createdAt || a.fromDate || 0).getTime();
+      const timeB = new Date(b.appliedDate || b.createdAt || b.fromDate || 0).getTime();
+      return timeB - timeA;
+    });
 
     return sendSuccess(res, "Pending approvals fetched successfully", { records });
   } catch (err) {

@@ -17,7 +17,12 @@ export function PendingApprovalList({ onActionComplete }: { onActionComplete: ()
     try {
       setLoading(true);
       const data = await fetchPendingApprovals();
-      setRequests(data);
+      const sorted = [...(data || [])].sort((a, b) => {
+        const timeA = new Date(a.appliedDate || (a as any).createdAt || a.fromDate || 0).getTime();
+        const timeB = new Date(b.appliedDate || (b as any).createdAt || b.fromDate || 0).getTime();
+        return timeB - timeA;
+      });
+      setRequests(sorted);
     } catch (error: any) {
       toast.error(error.message || "Failed to load pending approvals");
     } finally {

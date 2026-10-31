@@ -471,7 +471,14 @@ exports.monthlyForAdmin = async (req, res) => {
 
     const records = await Attendance.find({ date: { $regex: `^${prefix}` } })
       .populate("employeeId", "name designation")
-      .sort({ date: -1, checkInTime: -1 });
+      .lean();
+
+    records.sort((a, b) => {
+      if (a.date !== b.date) return b.date.localeCompare(a.date);
+      const timeA = new Date(a.requestedCheckInTime || a.checkInTime || a.createdAt || 0).getTime();
+      const timeB = new Date(b.requestedCheckInTime || b.checkInTime || b.createdAt || 0).getTime();
+      return timeB - timeA;
+    });
 
     return sendSuccess(res, "Monthly attendance", { records });
   } catch (err) {
@@ -487,7 +494,13 @@ exports.dateForAdmin = async (req, res) => {
 
     const records = await Attendance.find({ date })
       .populate("employeeId", "name designation")
-      .sort({ checkInTime: -1 });
+      .lean();
+
+    records.sort((a, b) => {
+      const timeA = new Date(a.requestedCheckInTime || a.checkInTime || a.createdAt || 0).getTime();
+      const timeB = new Date(b.requestedCheckInTime || b.checkInTime || b.createdAt || 0).getTime();
+      return timeB - timeA;
+    });
 
     return sendSuccess(res, "Date attendance", { records });
   } catch (err) {
@@ -516,7 +529,14 @@ exports.allForAdmin = async (req, res) => {
   try {
     const records = await Attendance.find({})
       .populate("employeeId", "name designation")
-      .sort({ date: -1, checkInTime: -1 });
+      .lean();
+
+    records.sort((a, b) => {
+      if (a.date !== b.date) return b.date.localeCompare(a.date);
+      const timeA = new Date(a.requestedCheckInTime || a.checkInTime || a.createdAt || 0).getTime();
+      const timeB = new Date(b.requestedCheckInTime || b.checkInTime || b.createdAt || 0).getTime();
+      return timeB - timeA;
+    });
 
     return sendSuccess(res, "All attendance records", { records });
   } catch (err) {
